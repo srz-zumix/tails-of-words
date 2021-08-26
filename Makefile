@@ -9,7 +9,11 @@ help: ## Display this help screen
 install: tails_of_words/*.py ## install self
 	python setup.py install
 
+pytest: ## python test
+	python setup.py test
 
-docker-alpine:
-	docker run -it --rm -v ${PWD}:/work -w /work python:3.8-alpine sh
-	# apk add make
+docker-build:
+	docker build -t tails-of-words .
+
+docker-run:
+	docker run -it --rm -v ${PWD}:/work -w /work tails-of-words sh

@@ -42,7 +42,7 @@ setup(
             'tails-of-words = tails_of_words.__main__:main',
         ]
     }
-    , install_requires=['pyknp']
+    , install_requires=['pyknp', 'python-Levenshtein']
     , tests_require=test_deps
     , test_suite="tests.test_suite"
     , extras_require={
