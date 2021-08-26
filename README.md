@@ -1,1 +1,2 @@
-# tails-of-words
+# 言葉のしっぽ（tails-of-words）
+
