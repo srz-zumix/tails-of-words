@@ -4,6 +4,9 @@ import logging
 
 from pyknp import Juman
 
+# zen2han = str.maketrans({chr(0xFF01 + i): chr(0x21 + i) for i in range(94)})
+
+
 class LinkedMrph:
 
     def __init__(self, mrph, prev, next):
@@ -66,4 +69,5 @@ class Words:
         # 半角スペース+アルファベットがあると "\ A" のような出力がされ、
         # 半角スペースで split しているため配列インデックスが想定とずれてエラーとなる
         # e.g. ValueError: invalid literal for int() with base 10: '\\'
+        # s = s.translate(zen2han)
         return s.replace(' ', '　').strip()
