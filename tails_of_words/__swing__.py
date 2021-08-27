@@ -1,4 +1,5 @@
 import itertools
+import logging
 
 from .__distance__ import Distance
 
@@ -31,7 +32,7 @@ class Section:
 class Swing:
 
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
 
     def distance(self, words, ids):
         inputs = {}
@@ -40,10 +41,12 @@ class Swing:
             if id in words.hinsi:
                 target = filter(lambda x: self.target_filter(x[0], x[1]), words.hinsi[id].items())
                 inputs.update(sorted(target, key=lambda x:len(x[1])))
+        self.logger.debug('combinations')
         for pair in itertools.combinations(inputs, 2):
             a = SectionPoint(pair[0], inputs[pair[0]])
             b = SectionPoint(pair[1], inputs[pair[1]])
             d.append(Section(a, b))
+        self.logger.debug('sorted distance')
         return sorted(d, key=lambda x:x.distance.levenshtein.midasi)
 
     def swing(self, words, ids):
