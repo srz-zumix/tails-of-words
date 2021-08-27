@@ -1,6 +1,7 @@
 import codecs
 import os
 import logging
+import glob
 
 from pyknp import Juman
 
@@ -21,6 +22,7 @@ class Words:
         self.jumanpp = Juman()
         self.hinsi = {}
         self.mrphs = []
+        self.lines = []
         self.logger = logging.getLogger(__name__)
 
     def parse(self, path, recursive=True, encoding="utf-8"):
@@ -33,21 +35,35 @@ class Words:
                     self.parse(child, recursive, encoding)
         elif os.path.isfile(path):
             self.parse_file(path, encoding)
+        else:
+            for f in glob.glob(path, recursive=recursive):
+                self.parse(f, recursive, encoding)
 
     def parse_file(self, file, encoding="utf-8"):
         f = codecs.open(file, 'r', encoding)
         self.logger.info(file)
         for line in f:
-            line = self.normalize(line)
-            if len(line):
-                result = self.jumanpp.analysis(line)
-                self.mrphs.append(result.mrph_list())
-                prev = None
-                curr = None
-                for next in result.mrph_list():
-                    prev = self.append(prev, curr, next)
-                    curr = next
-                prev = self.append(prev, curr, None)
+            self.parse_string(line)
+
+    def parse_string(self, str):
+        str = self.normalize(str)
+        if len(str):
+            result = self.jumanpp.analysis(str)
+            self.mrphs.append(result.mrph_list())
+            first = None
+            prev = None
+            curr = None
+            for next in result.mrph_list():
+                prev = self.append(prev, curr, next)
+                curr = next
+                if first is None:
+                    first = prev
+            last = self.append(prev, curr, None)
+            if first:
+                self.lines.append(first)
+            elif last:
+                self.lines.append(last)
+
 
     def append(self, prev, curr, next):
         if curr is None:
