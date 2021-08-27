@@ -1,0 +1,13 @@
+#!/bin/bash
+set -eu
+
+if [ "${DOCKER_TAG}" = "latest" ]; then
+  IMAGE_VERSION=$(docker run --rm ${IMAGE_NAME} --dumpversion)
+  echo ${IMAGE_VERSION}
+  if [ "${IMAGE_VERSION}" = "" ]; then
+    exit 1
+  else
+    docker tag ${IMAGE_NAME} ${DOCKER_REPO}:${IMAGE_VERSION}
+    docker push ${DOCKER_REPO}:${IMAGE_VERSION}
+  fi
+fi
