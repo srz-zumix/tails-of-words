@@ -1,7 +1,9 @@
 import codecs
+import csv
 import os
 import logging
 import glob
+import jaconv
 
 from pyknp import Juman
 
@@ -15,15 +17,15 @@ class LinkedMrph:
         self.prev = prev
         self.next = next
 
-
 class Words:
 
-    def __init__(self):
+    def __init__(self, columns):
         self.jumanpp = Juman()
         self.hinsi = {}
         self.mrphs = []
         self.lines = []
         self.logger = logging.getLogger(__name__)
+        self.columns = columns
 
     def parse(self, path, recursive=True, encoding="utf-8"):
         if os.path.isdir(path):
@@ -40,15 +42,38 @@ class Words:
                 self.parse(f, recursive, encoding)
 
     def parse_file(self, file, encoding="utf-8"):
-        f = codecs.open(file, 'r', encoding)
         self.logger.info(file)
-        for line in f:
-            self.parse_string(line)
+        with codecs.open(file, 'r', encoding) as f:
+            if os.path.splitext(file)[1] in [".csv", ".tsv"]:
+                self.parse_from_reader(csv.DictReader(f))
+            else:
+                self.parse_from_reader(f)
+
+    def parse_from_reader(self, reader):
+        for r in reader:
+            if isinstance(r, list):
+                for s in r:
+                    self.parse_string(s)
+            elif isinstance(r, dict):
+                if len(self.columns) > 0:
+                    for column in self.columns:
+                        self.parse_string(r[column])
+                else:
+                    for s in r.values():
+                        self.parse_string(s)
+            else:
+                self.parse_string(r)
 
     def parse_string(self, str):
+        for s in str.split('\n'):
+            self._parse_string(s)
+
+    def _parse_string(self, str):
         str = self.normalize(str)
         if len(str):
             result = self.jumanpp.analysis(str)
+            for mrph in result.mrph_list():
+                self.normalize_yomi(mrph)
             self.mrphs.append(result.mrph_list())
             first = None
             prev = None
@@ -82,8 +107,14 @@ class Words:
         return mrph
 
     def normalize(self, s):
+        # えー！？が１つの名詞になってしまうので「！・？」は半角にする
+        s = s.replace('！','!').replace('？','?')
         # 半角スペース+アルファベットがあると "\ A" のような出力がされ、
         # 半角スペースで split しているため配列インデックスが想定とずれてエラーとなる
         # e.g. ValueError: invalid literal for int() with base 10: '\\'
-        # s = s.translate(zen2han)
         return s.replace(' ', '　').strip()
+
+    def normalize_yomi(self, mrph):
+        # yomi はひらがなとカタカナが入る場合がある
+        # 同じ音の場合は編集距離が 0 になってほしいので合わせる
+        mrph.yomi = jaconv.kata2hira(mrph.yomi)
