@@ -19,7 +19,7 @@ class LinkedMrph:
 
 class Words:
 
-    def __init__(self, columns):
+    def __init__(self, columns=[]):
         self.jumanpp = Juman()
         self.hinsi = {}
         self.mrphs = []
