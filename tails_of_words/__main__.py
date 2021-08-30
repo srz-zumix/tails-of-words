@@ -12,11 +12,16 @@ USER_CHOICE = LOG_LEVEL+list(map(lambda w: w.lower(), LOG_LEVEL))
 class Process:
 
     def __init__(self, args):
-        self.ids = [6]
-        self.words = self.get_words(args.sources)
+        self.ids = [6, 15]
+        if len(args.hinsi):
+            self.ids = []
+            for x in args.hinsi:
+                for id in x.split(','):
+                    self.ids.append(int(id))
+        self.words = self.get_words(args.sources, args.column)
 
-    def get_words(self, sources):
-        words = Words()
+    def get_words(self, sources, column):
+        words = Words(column)
         for src in sources:
             words.parse(src)
         return words
@@ -29,10 +34,22 @@ class Process:
         return d
 
     def get_distance(self):
-        return Swing().distance(self.words, self.ids)
+        for x in Swing().distance(self.words, self.ids):
+            for d in x:
+                yield d
 
-    def get_swing(self):
-        return Swing().swing(self.words, self.ids)
+    def get_swing(self, num):
+        if num > 0:
+            high = []
+            for x in Swing().swing(self.words, self.ids):
+                high.extend(x[0:num])
+                high = sorted(high, reverse=True, key=lambda x: x.score)[0:num]
+            for d in high:
+                yield d
+        else:
+            for x in Swing().swing(self.words, self.ids):
+                for d in x:
+                    yield d
 
 
 class CLI:
@@ -79,15 +96,43 @@ class CLI:
             description='show words',
             help='show words. see `show -h`')
         show_cmd.set_defaults(handler=self.command_show)
+        show_cmd.add_argument(
+            '-a',
+            '--attr',
+            action='append',
+            default=[],
+            help="set show mrph attributes"
+        )
 
         swing_cmd = subparser.add_parser(
             'swing',
             description='show notation fluctuations',
             help='show notation fluctuations. see `swing -h`')
         swing_cmd.set_defaults(handler=self.command_swing)
+        swing_cmd.add_argument(
+            '-n',
+            '--num',
+            type=int,
+            default=30,
+            help="Display n items from the highest score. All if n is less than or equal to 0"
+        )
 
         input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
         for cmd in input_file_cmds:
+            cmd.add_argument(
+                '-c',
+                '--column',
+                action='append',
+                default=[],
+                help="specific csv file column name."
+            )
+            cmd.add_argument(
+                '-i',
+                '--hinsi',
+                action='append',
+                default=[],
+                help="set collect hinsi_id"
+            )
             cmd.add_argument(
                 'sources',
                 metavar='SOURCE',
@@ -130,17 +175,31 @@ class CLI:
 
     def command_swing(self, args):
         proc = self.get_process(args)
-        for d in proc.get_swing():
+        for d in proc.get_swing(args.num):
             print(d.format())
+
+    def get_variables(self, mrph, vars):
+        s = []
+        for v in vars:
+            id = v + "_id"
+            if hasattr(mrph, v):
+                if hasattr(mrph, id):
+                    s.append("{}({})".format(getattr(mrph, v), getattr(mrph, id)))
+                else:
+                    s.append("{}".format(getattr(mrph, v)))
+        return s
 
     def command_show(self, args):
         proc = self.get_process(args)
+        vars = args.attr
+        if len(vars) == 0:
+            vars.append('hinsi')
         for mrphs in proc.words.mrphs:
             infos = []
             s = ""
             prev = ""
             for mrph in mrphs:
-                infos.insert(0, "{}└ {}({})".format(prev, mrph.hinsi, mrph.hinsi_id))
+                infos.insert(0, "{}└ {}".format(prev, ','.join(self.get_variables(mrph, vars))))
                 prev = "\033[34m{}\033[33m\033[4m{}\033[0m".format(s, mrph.midasi)
                 s += mrph.midasi
             print(prev)

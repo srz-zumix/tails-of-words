@@ -26,4 +26,4 @@ class Distance:
 
     def normalize(self, s):
         # 編集距離を取るときに正規化を行うことで距離が短いのに違う単語を検出しやすくする
-        return s.translate(zen2han)
+        return s.translate(zen2han).lower()

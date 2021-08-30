@@ -1,8 +1,40 @@
-import itertools
+import re
 import logging
 
 from .__distance__ import Distance
 
+re_katakana = re.compile(r'[\u30A1-\u30F4ー]+')
+
+
+def calc_socre_include(score, a, b):
+    # 片方を含む場合はスコアダウン
+    if a in b:
+        # 長音ルールのゆれはスコアアップ
+        if (a + "ー") == b and re_katakana.fullmatch(a):
+            return score*1.2
+        else:
+            return score*0.5
+    return score
+
+
+def calc_score(section):
+    # 編集距離が近いほどスコア大
+    score = section.distance.normalized.midasi
+    # 出現数の差が大きいほどスコア大
+    la = len(section.a.mrphs)
+    lb = len(section.b.mrphs)
+    ls = (1.0 - min(la,lb)/(la+lb)*2)
+    score *= 1.0 + ls
+    # 読みが同じならスコアアップ
+    if section.distance.normalized.yomi >= 1.0:
+        score *= 1.2
+    score = calc_socre_include(score, section.a.midasi, section.b.midasi)
+    score = calc_socre_include(score, section.b.midasi, section.a.midasi)
+    # 読みが同じで、読みから長音が消えてる場合、スコアを下げる
+    if section.a.mrphs[0].mrph.yomi == section.b.mrphs[0].mrph.yomi:
+        if 'ー' not in section.a.mrphs[0].mrph.yomi and ('ー' in section.a.midasi or 'ー' in section.b.midasi):
+            score *= 0.8
+    return score
 
 class SectionPoint:
 
@@ -17,10 +49,7 @@ class Section:
         self.a = a
         self.b = b
         self.distance = Distance(a.mrphs[0].mrph, b.mrphs[0].mrph)
-        la = len(a.mrphs)
-        lb = len(b.mrphs)
-        ls = min(la,lb)/(la+lb)
-        self.score = (self.distance.normalized.midasi + self.distance.normalized.yomi) / 2 + ls
+        self.score = calc_score(self)
 
     def format(self):
         a = "{}({})".format(self.a.midasi, len(self.a.mrphs))
@@ -36,22 +65,24 @@ class Swing:
 
     def distance(self, words, ids):
         inputs = {}
-        d = []
         for id in ids:
             if id in words.hinsi:
                 target = filter(lambda x: self.target_filter(x[0], x[1]), words.hinsi[id].items())
                 inputs.update(sorted(target, key=lambda x:len(x[1])))
         self.logger.debug('combinations')
-        for pair in itertools.combinations(inputs, 2):
-            a = SectionPoint(pair[0], inputs[pair[0]])
-            b = SectionPoint(pair[1], inputs[pair[1]])
-            d.append(Section(a, b))
-        self.logger.debug('sorted distance')
-        return sorted(d, key=lambda x:x.distance.levenshtein.midasi)
+        keys = list(inputs.keys())
+        while len(keys) > 0:
+            lhs = keys.pop(0)
+            d = []
+            for rhs in keys:
+                a = SectionPoint(lhs, inputs[lhs])
+                b = SectionPoint(rhs, inputs[rhs])
+                d.append(Section(a, b))
+            yield sorted(d, key=lambda x:x.distance.levenshtein.midasi)
 
     def swing(self, words, ids):
-        d = filter(lambda x:x.score > 1, self.distance(words, ids))
-        return sorted(d, key=lambda x:x.score)
+        for d in self.distance(words, ids):
+            yield sorted(filter(lambda x:x.score > 0, d), reverse=True, key=lambda x:x.score)
 
     def target_filter(self, midasi, mrphs):
         # 数字のみは除外
