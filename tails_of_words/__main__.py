@@ -13,6 +13,11 @@ class Process:
 
     def __init__(self, args):
         self.ids = [6, 15]
+        if len(args.hinsi):
+            self.ids = []
+            for x in args.hinsi:
+                for id in x.split(','):
+                    self.ids.append(int(id))
         self.words = self.get_words(args.sources, args.column)
 
     def get_words(self, sources, column):
@@ -120,6 +125,13 @@ class CLI:
                 action='append',
                 default=[],
                 help="specific csv file column name."
+            )
+            cmd.add_argument(
+                '-i',
+                '--hinsi',
+                action='append',
+                default=[],
+                help="set collect hinsi_id"
             )
             cmd.add_argument(
                 'sources',

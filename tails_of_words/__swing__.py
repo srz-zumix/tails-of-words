@@ -17,7 +17,6 @@ def calc_socre_include(score, a, b):
     return score
 
 
-
 def calc_score(section):
     # 編集距離が近いほどスコア大
     score = section.distance.normalized.midasi
@@ -31,6 +30,10 @@ def calc_score(section):
         score *= 1.2
     score = calc_socre_include(score, section.a.midasi, section.b.midasi)
     score = calc_socre_include(score, section.b.midasi, section.a.midasi)
+    # 読みが同じで、読みから長音が消えてる場合、スコアを下げる
+    if section.a.mrphs[0].mrph.yomi == section.b.mrphs[0].mrph.yomi:
+        if 'ー' not in section.a.mrphs[0].mrph.yomi and ('ー' in section.a.midasi or 'ー' in section.b.midasi):
+            score *= 0.8
     return score
 
 class SectionPoint:
