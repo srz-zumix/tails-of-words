@@ -16,4 +16,4 @@ docker-build:
 	docker build -t tails-of-words .
 
 docker-run:
-	docker run -it --rm -v ${PWD}:/work -w /work tails-of-words sh
+	docker run -it --rm -v ${PWD}:/work -w /work --entrypoint sh tails-of-words
