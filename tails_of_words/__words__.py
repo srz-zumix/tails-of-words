@@ -19,15 +19,21 @@ class LinkedMrph:
 
 class Words:
 
-    def __init__(self, columns=[]):
+    def __init__(self, excludes=[], columns=[]):
         self.jumanpp = Juman()
         self.hinsi = {}
         self.mrphs = []
         self.lines = []
         self.logger = logging.getLogger(__name__)
         self.columns = columns
+        self.excludes = []
+        for e in excludes:
+            self.excludes.extend(glob.glob(e, recursive=True))
+        self.logger.debug(self.excludes)
 
     def parse(self, path, recursive=True, encoding="utf-8"):
+        if os.path.normpath(path) in self.excludes:
+            return
         if os.path.isdir(path):
             for f in os.listdir(path):
                 child = os.path.join(path, f)
@@ -42,6 +48,8 @@ class Words:
                 self.parse(f, recursive, encoding)
 
     def parse_file(self, file, encoding="utf-8"):
+        if os.path.normpath(file) in self.excludes:
+            return
         self.logger.info(file)
         with codecs.open(file, 'r', encoding) as f:
             if os.path.splitext(file)[1] in [".csv", ".tsv"]:

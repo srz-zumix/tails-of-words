@@ -18,10 +18,10 @@ class Process:
             for x in args.hinsi:
                 for id in x.split(','):
                     self.ids.append(int(id))
-        self.words = self.get_words(args.sources, args.column)
+        self.words = self.get_words(args.sources, args.exclude, args.column)
 
-    def get_words(self, sources, column):
-        words = Words(column)
+    def get_words(self, sources, excludes, column):
+        words = Words(excludes, column)
         for src in sources:
             words.parse(src)
         return words
@@ -132,6 +132,13 @@ class CLI:
                 action='append',
                 default=[],
                 help="set collect hinsi_id"
+            )
+            cmd.add_argument(
+                '-e',
+                '--exclude',
+                action='append',
+                default=[],
+                help="exclude files"
             )
             cmd.add_argument(
                 'sources',
