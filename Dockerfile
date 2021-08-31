@@ -10,4 +10,4 @@ WORKDIR /tmp/tails-of-words
 RUN python setup.py install
 WORKDIR /
 
-CMD ["tails-of-words"]
+ENTRYPOINT ["tails-of-words"]
