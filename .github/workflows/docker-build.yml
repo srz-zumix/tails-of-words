@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+  release:
+    types:
+      - created
   # schedule:
   #   - cron: "0 0 * * 1"
 
@@ -29,4 +32,5 @@ jobs:
           DOCKER_REPO: srzzumix/tails-of-words
         run: |
           ./hooks/post_push
+        if: github.event_name == 'release' && github.event.action == 'created'
 
