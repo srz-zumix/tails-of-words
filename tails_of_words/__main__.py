@@ -62,6 +62,13 @@ class JsonWritter:
         if output:
             self.output = open(output, 'w', encoding=encoding)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.output:
+            self.output.close()
+
     def add(self, obj):
         if self.output:
             if isinstance(obj, Section):
@@ -80,6 +87,7 @@ class JsonWritter:
 
     def dump(self):
         if self.output:
+            # print(json.dumps(self.obj, indent=4, ensure_ascii=False))
             json.dump(self.obj, self.output, indent=4, ensure_ascii=False)
 
 
@@ -207,28 +215,28 @@ class CLI:
 
     def command_count(self, args):
         proc = self.get_process(args)
-        jw = JsonWritter(args.output)
-        for v in proc.get_hinsi().values():
-            for word,arr in v:
-                print("{} : {}".format(len(arr), word))
-                jw.add(word, len(arr))
-        jw.dump()
+        with JsonWritter(args.output) as jw:
+            for v in proc.get_hinsi().values():
+                for word,arr in v:
+                    print("{} : {}".format(len(arr), word))
+                    jw.add((word, len(arr)))
+            jw.dump()
 
     def command_distance(self, args):
         proc = self.get_process(args)
-        jw = JsonWritter(args.output)
-        for d in proc.get_distance():
-            jw.add(d)
-            print(d.format())
-        jw.dump()
+        with JsonWritter(args.output) as jw:
+            for d in proc.get_distance():
+                jw.add(d)
+                print(d.format())
+            jw.dump()
 
     def command_swing(self, args):
         proc = self.get_process(args)
-        jw = JsonWritter(args.output)
-        for d in proc.get_swing(args.num):
-            jw.add(d)
-            print(d.format())
-        jw.dump()
+        with JsonWritter(args.output) as jw:
+            for d in proc.get_swing(args.num):
+                jw.add(d)
+                print(d.format())
+            jw.dump()
 
     def get_variables(self, mrph, vars):
         s = []
