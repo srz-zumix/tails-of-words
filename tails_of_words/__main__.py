@@ -1,8 +1,10 @@
 import logging
+import json
 
 from . import __version__ as VERSION
 from .__words__ import Words
 from .__swing__ import Swing
+from .__swing__ import Section
 from argparse import ArgumentParser
 
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
@@ -50,6 +52,43 @@ class Process:
             for x in Swing().swing(self.words, self.ids):
                 for d in x:
                     yield d
+
+
+class JsonWritter:
+
+    def __init__(self, output, encoding="utf-8"):
+        self.output = None
+        self.obj = {}
+        if output:
+            self.output = open(output, 'w', encoding=encoding)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.output:
+            self.output.close()
+
+    def add(self, obj):
+        if self.output:
+            if isinstance(obj, Section):
+                if 'sections' not in self.obj:
+                    self.obj['sections'] = []
+                self.obj['sections'].append({
+                    "mrphs": [obj.a.get_rep_mrph_dict(), obj.b.get_rep_mrph_dict()],
+                    "distance": {
+                        "levenshtein": obj.distance.levenshtein.__dict__,
+                        "normalized": obj.distance.normalized.__dict__
+                    },
+                    "score": obj.score
+                })
+            elif isinstance(obj, tuple):
+                self.obj[obj[0]] = obj[1]
+
+    def dump(self):
+        if self.output:
+            # print(json.dumps(self.obj, indent=4, ensure_ascii=False))
+            json.dump(self.obj, self.output, indent=4, ensure_ascii=False)
 
 
 class CLI:
@@ -120,6 +159,11 @@ class CLI:
         input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
         for cmd in input_file_cmds:
             cmd.add_argument(
+                '-o',
+                '--output',
+                help="output json file path."
+            )
+            cmd.add_argument(
                 '-c',
                 '--column',
                 action='append',
@@ -171,19 +215,28 @@ class CLI:
 
     def command_count(self, args):
         proc = self.get_process(args)
-        for v in proc.get_hinsi().values():
-            for word,arr in v:
-                print("{} : {}".format(len(arr), word))
+        with JsonWritter(args.output) as jw:
+            for v in proc.get_hinsi().values():
+                for word,arr in v:
+                    print("{} : {}".format(len(arr), word))
+                    jw.add((word, len(arr)))
+            jw.dump()
 
     def command_distance(self, args):
         proc = self.get_process(args)
-        for d in proc.get_distance():
-            print(d.format())
+        with JsonWritter(args.output) as jw:
+            for d in proc.get_distance():
+                jw.add(d)
+                print(d.format())
+            jw.dump()
 
     def command_swing(self, args):
         proc = self.get_process(args)
-        for d in proc.get_swing(args.num):
-            print(d.format())
+        with JsonWritter(args.output) as jw:
+            for d in proc.get_swing(args.num):
+                jw.add(d)
+                print(d.format())
+            jw.dump()
 
     def get_variables(self, mrph, vars):
         s = []
