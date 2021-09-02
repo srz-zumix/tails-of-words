@@ -31,8 +31,8 @@ def calc_score(section):
     score = calc_socre_include(score, section.a.midasi, section.b.midasi)
     score = calc_socre_include(score, section.b.midasi, section.a.midasi)
     # 読みが同じで、読みから長音が消えてる場合、スコアを下げる
-    if section.a.mrphs[0].mrph.yomi == section.b.mrphs[0].mrph.yomi:
-        if 'ー' not in section.a.mrphs[0].mrph.yomi and ('ー' in section.a.midasi or 'ー' in section.b.midasi):
+    if section.a.get_rep_mrph().yomi == section.b.get_rep_mrph().yomi:
+        if 'ー' not in section.a.get_rep_mrph().yomi and ('ー' in section.a.midasi or 'ー' in section.b.midasi):
             score *= 0.8
     return score
 
@@ -42,13 +42,34 @@ class SectionPoint:
         self.midasi = k
         self.mrphs = mrphs
 
+    def get_rep_mrph(self):
+        return self.mrphs[0].mrph
+
+    def get_rep_mrph_dict(self):
+        mrph = self.get_rep_mrph()
+        d = {
+                "midasi": mrph.midasi,
+                "yomi": mrph.yomi,
+                "genkei": mrph.genkei,
+                "hinsi": mrph.hinsi,
+                "hinsi_id": mrph.hinsi_id,
+                "bunrui": mrph.bunrui,
+                "bunrui_id": mrph.bunrui_id,
+                "katuyou1": mrph.katuyou1,
+                "katuyou1_id": mrph.katuyou1_id,
+                "katuyou2": mrph.katuyou2,
+                "katuyou2_id": mrph.katuyou2_id,
+                "imis": mrph.imis,
+                "fstring": mrph.fstring
+            }
+        return d
 
 class Section:
 
     def __init__(self, a, b) -> None:
         self.a = a
         self.b = b
-        self.distance = Distance(a.mrphs[0].mrph, b.mrphs[0].mrph)
+        self.distance = Distance(a.get_rep_mrph(), b.get_rep_mrph())
         self.score = calc_score(self)
 
     def format(self):
