@@ -175,7 +175,7 @@ class CLI:
                 '--hinsi',
                 action='append',
                 default=[],
-                help="set collect hinsi_id"
+                help="set collect hinsi_id. default [6, 15]"
             )
             cmd.add_argument(
                 '-e',

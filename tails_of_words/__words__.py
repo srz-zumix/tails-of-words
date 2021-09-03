@@ -4,6 +4,7 @@ import os
 import logging
 import glob
 import jaconv
+import traceback
 
 from pyknp import Juman
 
@@ -79,24 +80,32 @@ class Words:
     def _parse_string(self, str):
         str = self.normalize(str)
         if len(str):
-            result = self.jumanpp.analysis(str)
-            for mrph in result.mrph_list():
-                self.normalize_yomi(mrph)
-            self.mrphs.append(result.mrph_list())
-            first = None
-            prev = None
-            curr = None
-            for next in result.mrph_list():
-                prev = self.append(prev, curr, next)
-                curr = next
-                if first is None:
-                    first = prev
-            last = self.append(prev, curr, None)
-            if first:
-                self.lines.append(first)
-            elif last:
-                self.lines.append(last)
+            result = self._analyze(str)
+            if result:
+                for mrph in result.mrph_list():
+                    self.normalize_yomi(mrph)
+                self.mrphs.append(result.mrph_list())
+                first = None
+                prev = None
+                curr = None
+                for next in result.mrph_list():
+                    prev = self.append(prev, curr, next)
+                    curr = next
+                    if first is None:
+                        first = prev
+                last = self.append(prev, curr, None)
+                if first:
+                    self.lines.append(first)
+                elif last:
+                    self.lines.append(last)
 
+    def _analyze(self, str):
+        try:
+            return self.jumanpp.analysis(str)
+        except Exception as e:
+            self.logger.debug(str)
+            self.logger.error(traceback.format_exc())
+        return None
 
     def append(self, prev, curr, next):
         if curr is None:
@@ -117,6 +126,9 @@ class Words:
     def normalize(self, s):
         # えー！？が１つの名詞になってしまうので「！・？」は半角にする
         s = s.replace('！','!').replace('？','?')
+        # https://qiita.com/NLPingu/items/3cd77eb2421283b851b4
+        # ",@,# は全角にする
+        s = s.replace('"','”').replace('@','＠').replace('#','＃')
         # 半角スペース+アルファベットがあると "\ A" のような出力がされ、
         # 半角スペースで split しているため配列インデックスが想定とずれてエラーとなる
         # e.g. ValueError: invalid literal for int() with base 10: '\\'
