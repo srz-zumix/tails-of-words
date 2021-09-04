@@ -40,11 +40,12 @@ class Process:
             for d in x:
                 yield d
 
-    def get_swing(self, num):
+    def get_swing(self, num, threshold):
         if num > 0:
             high = []
             for x in Swing().swing(self.words, self.ids):
-                high.extend(x[0:num])
+                tx = list(filter(lambda x:x.score >= threshold, x))
+                high.extend(tx[0:num])
                 high = sorted(high, reverse=True, key=lambda x: x.score)[0:num]
             for d in high:
                 yield d
@@ -155,6 +156,13 @@ class CLI:
             default=30,
             help="Display n items from the highest score. All if n is less than or equal to 0"
         )
+        swing_cmd.add_argument(
+            '-t',
+            '--threshold',
+            type=float,
+            default=0.0,
+            help="Display words whose score exceeds the threshold."
+        )
 
         input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
         for cmd in input_file_cmds:
@@ -233,7 +241,7 @@ class CLI:
     def command_swing(self, args):
         proc = self.get_process(args)
         with JsonWritter(args.output) as jw:
-            for d in proc.get_swing(args.num):
+            for d in proc.get_swing(args.num, args.threshold):
                 jw.add(d)
                 print(d.format())
             jw.dump()
