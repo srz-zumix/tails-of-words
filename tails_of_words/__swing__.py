@@ -4,6 +4,7 @@ import logging
 from .__distance__ import Distance
 
 re_katakana = re.compile(r'[\u30A1-\u30F4ー]+')
+use_jaro_winkler = False
 
 
 def calc_socre_include(score, a, b):
@@ -19,14 +20,14 @@ def calc_socre_include(score, a, b):
 
 def calc_score(section):
     # 編集距離が近いほどスコア大
-    score = section.distance.normalized.midasi
+    score = section.distance.normalized_distance().midasi
     # 出現数の差が大きいほどスコア大
     la = len(section.a.mrphs)
     lb = len(section.b.mrphs)
     ls = (1.0 - min(la,lb)/(la+lb)*2)
     score *= 1.0 + ls
     # 読みが同じならスコアアップ
-    if section.distance.normalized.yomi >= 1.0:
+    if section.distance.normalized_distance().yomi >= 1.0:
         score *= 1.2
     score = calc_socre_include(score, section.a.midasi, section.b.midasi)
     score = calc_socre_include(score, section.b.midasi, section.a.midasi)
@@ -69,19 +70,20 @@ class Section:
     def __init__(self, a, b) -> None:
         self.a = a
         self.b = b
-        self.distance = Distance(a.get_rep_mrph(), b.get_rep_mrph())
+        self.distance = Distance(a.get_rep_mrph(), b.get_rep_mrph(), use_jaro_winkler)
         self.score = calc_score(self)
 
     def format(self):
         a = "{}({})".format(self.a.midasi, len(self.a.mrphs))
         b = "{}({})".format(self.b.midasi, len(self.b.mrphs))
-        levenshtein = "{}, {:.2f}, {:.2f}".format(self.distance.levenshtein.midasi, self.distance.normalized.midasi, self.distance.normalized.yomi)
-        return "{}: {} vs {} : {:.2f}".format(levenshtein, a, b, self.score)
+        return "{}: {} vs {} : {:.2f}".format(self.distance.format(), a, b, self.score)
 
 
 class Swing:
 
-    def __init__(self):
+    def __init__(self, jaro_winkler):
+        global use_jaro_winkler
+        use_jaro_winkler = jaro_winkler
         self.logger = logging.getLogger(__name__)
 
     def distance(self, words, ids):
@@ -99,7 +101,7 @@ class Swing:
                 a = SectionPoint(lhs, inputs[lhs])
                 b = SectionPoint(rhs, inputs[rhs])
                 d.append(Section(a, b))
-            yield sorted(d, key=lambda x:x.distance.levenshtein.midasi)
+            yield sorted(d, key=lambda x:x.distance.normalized_distance().midasi)
 
     def swing(self, words, ids):
         for d in self.distance(words, ids):
