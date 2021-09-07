@@ -91,7 +91,7 @@ class Swing:
         for id in ids:
             if id in words.hinsi:
                 target = filter(lambda x: self.target_filter(x[0], x[1]), words.hinsi[id].items())
-                inputs.update(sorted(target, key=lambda x:len(x[1])))
+                inputs.update(sorted(target, key=lambda x: len(x[1])))
         self.logger.debug('combinations')
         keys = list(inputs.keys())
         while len(keys) > 0:
@@ -101,11 +101,11 @@ class Swing:
                 a = SectionPoint(lhs, inputs[lhs])
                 b = SectionPoint(rhs, inputs[rhs])
                 d.append(Section(a, b))
-            yield sorted(d, key=lambda x:x.distance.normalized_distance().midasi)
+            yield sorted(d, key=lambda x: x.distance.normalized_distance().midasi)
 
     def swing(self, words, ids):
         for d in self.distance(words, ids):
-            yield sorted(filter(lambda x:x.score > 0, d), reverse=True, key=lambda x:x.score)
+            yield sorted(filter(lambda x: x.score > 0, d), reverse=True, key=lambda x: x.score)
 
     def target_filter(self, midasi, mrphs):
         # 数字のみは除外
