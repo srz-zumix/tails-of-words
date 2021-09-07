@@ -1,5 +1,4 @@
 import Levenshtein
-import os
 
 zen2han = str.maketrans({chr(0xFF01 + i): chr(0x21 + i) for i in range(94)})
 
