@@ -1,5 +1,10 @@
 # 言葉のしっぽ（tails-of-words）
 
+[![PyPI version](https://badge.fury.io/py/tails-of-words.svg)](https://badge.fury.io/py/tails-of-words)
+[![Python Versions](https://img.shields.io/pypi/pyversions/tails-of-words.svg)](https://pypi.org/project/tails-of-words/)
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/srzzumix/tails-of-words)](https://hub.docker.com/r/srzzumix/tails-of-words)
+[![GitHub Actions](https://github.com/srz-zumix/tails-of-words/actions/workflows/main.yml/badge.svg)](https://github.com/srz-zumix/tails-of-words/actions/workflows/main.yml)
+
 表記ゆれ検出の実装実験
 
 ## 概要
