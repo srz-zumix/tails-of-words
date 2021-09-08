@@ -20,6 +20,7 @@ class Process:
             for x in args.hinsi:
                 for id in x.split(','):
                     self.ids.append(int(id))
+        self.use_jaro_winkler = args.jaro_winkler
         self.words = self.get_words(args.sources, args.exclude, args.column)
 
     def get_words(self, sources, excludes, column):
@@ -35,22 +36,25 @@ class Process:
                 d[id] = sorted(self.words.hinsi[id].items(), key=lambda x:len(x[1]))
         return d
 
+    def _swing(self):
+        return Swing(self.use_jaro_winkler)
+
     def get_distance(self):
-        for x in Swing().distance(self.words, self.ids):
+        for x in self._swing().distance(self.words, self.ids):
             for d in x:
                 yield d
 
     def get_swing(self, num, threshold):
         if num > 0:
             high = []
-            for x in Swing().swing(self.words, self.ids):
+            for x in self._swing().swing(self.words, self.ids):
                 tx = list(filter(lambda x:x.score >= threshold, x))
                 high.extend(tx[0:num])
                 high = sorted(high, reverse=True, key=lambda x: x.score)[0:num]
             for d in high:
                 yield d
         else:
-            for x in Swing().swing(self.words, self.ids):
+            for x in self._swing().swing(self.words, self.ids):
                 for d in x:
                     yield d
 
@@ -79,7 +83,8 @@ class JsonWritter:
                     "mrphs": [obj.a.get_rep_mrph_dict(), obj.b.get_rep_mrph_dict()],
                     "distance": {
                         "levenshtein": obj.distance.levenshtein.__dict__,
-                        "normalized": obj.distance.normalized.__dict__
+                        "normalized": obj.distance.normalized.__dict__,
+                        "jaro_winkler": obj.distance.jaro_winkler.__dict__
                     },
                     "score": obj.score
                 })
@@ -163,6 +168,14 @@ class CLI:
             default=0.0,
             help="Display words whose score exceeds the threshold."
         )
+
+        distance_cmds = [distance_cmd, swing_cmd]
+        for cmd in distance_cmds:
+            cmd.add_argument(
+                '--jaro-winkler',
+                action='store_true',
+                help="use jaro_winkler."
+            )
 
         input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
         for cmd in input_file_cmds:
