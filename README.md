@@ -21,6 +21,15 @@ docker ならビルドするだけで実行環境が整います。
 
 python setup.py install する場合は、別途 jumanpp のインストールが必要です。
 
+e.g.
+
+```sh
+$ echo コンピュータとコンピューター | tails-of-words swing -
+1, 0.86, 0.86: コンピュータ(1) vs コンピューター(1) : 1.03
+```
+
+### Help
+
 ```sh
 usage: tails-of-words [-h] [-v] [--dumpversion] [--log {DEBUG,INFO,WARN,ERROR,CRITICAL,debug,info,warn,error,critical}] {count,distance,show,swing,help} ...
 

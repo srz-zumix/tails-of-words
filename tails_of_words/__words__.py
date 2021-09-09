@@ -5,6 +5,7 @@ import logging
 import glob
 import jaconv
 import traceback
+import sys
 
 from pyknp import Juman
 
@@ -33,6 +34,9 @@ class Words:
         self.logger.debug(self.excludes)
 
     def parse(self, path, recursive=True, encoding="utf-8"):
+        if path == '-':
+            self.parse_string(sys.stdin.read())
+            return
         if os.path.normpath(path) in self.excludes:
             return
         if os.path.isdir(path):
