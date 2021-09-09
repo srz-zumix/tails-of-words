@@ -80,13 +80,14 @@ class JsonWritter:
                 if 'sections' not in self.obj:
                     self.obj['sections'] = []
                 self.obj['sections'].append({
-                    "mrphs": [obj.a.get_rep_mrph_dict(), obj.b.get_rep_mrph_dict()],
+                    "vs": "{}vs{}".format(obj.a.midasi, obj.b.midasi),
                     "distance": {
                         "levenshtein": obj.distance.levenshtein.__dict__,
                         "normalized": obj.distance.normalized.__dict__,
                         "jaro_winkler": obj.distance.jaro_winkler.__dict__
                     },
-                    "score": obj.score
+                    "score": obj.score,
+                    "mrphs": [obj.a.get_rep_mrph_dict(), obj.b.get_rep_mrph_dict()],
                 })
             elif isinstance(obj, tuple):
                 self.obj[obj[0]] = obj[1]
