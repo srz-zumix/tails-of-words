@@ -43,18 +43,25 @@ class test_cli(test_base):
         return super(test_cli, self).tearDown()
 
     def cli_run(self, opt):
-        cli = CLI()
-        cli.execute_with_args(opt)
-
-    def test_version(self):
         try:
-            opt = [ '--dumpversion' ]
-            self.cli_run(opt)
+            cli = CLI()
+            cli.execute_with_args(opt)
         except SystemExit as e:
             output = self.stdoout()
             eprint(output)
             self.assertEqual(e.code, 0)
 
+    def test_version(self):
+        opt = [ '--dumpversion' ]
+        self.cli_run(opt)
+
+    def test_show(self):
+        sys.stdin = StringIO("テストだよ")
+        opt = [ 'show', '-' ]
+        self.cli_run(opt)
+        output = self.stdoout()
+        # eprint(output)
+        self.assertNotEqual(output.find("名詞"), -1)
 
 class test_words(test_base):
 

@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 USER_CHOICE = LOG_LEVEL+list(map(lambda w: w.lower(), LOG_LEVEL))
+TYPE_CHOICE = ['csv', 'xml', 'html', 'plain']
 
 
 class Process:
@@ -20,11 +21,12 @@ class Process:
             for x in args.hinsi:
                 for id in x.split(','):
                     self.ids.append(int(id))
-        self.use_jaro_winkler = args.jaro_winkler
-        self.words = self.get_words(args.sources, args.exclude, args.column)
+        if 'jaro_winkler' in args:
+            self.use_jaro_winkler = args.jaro_winkler
+        self.words = self.get_words(args.sources, args.exclude, args.column, args.html2text, args.stdin_type)
 
-    def get_words(self, sources, excludes, column):
-        words = Words(excludes, column)
+    def get_words(self, sources, excludes, column, is_html2text, stdin_type):
+        words = Words(excludes, column, is_html2text, stdin_type)
         for src in sources:
             words.parse(src)
         return words
@@ -120,7 +122,23 @@ class CLI:
             '--log',
             choices=USER_CHOICE,
             default="WARN",
-            help="set log level."
+            help="set log level"
+        )
+        self.parser.add_argument(
+            '-f',
+            '--stdin-type',
+            '--stdin-format',
+            dest='stdin_type',
+            choices=TYPE_CHOICE,
+            default="",
+            help="set stdin format type"
+        )
+        self.parser.add_argument(
+            '--h2t',
+            '--html2text',
+            dest='html2text',
+            action='store_true',
+            help="Convert input text with html2text"
         )
 
         subparser = self.parser.add_subparsers()
@@ -173,7 +191,9 @@ class CLI:
         distance_cmds = [distance_cmd, swing_cmd]
         for cmd in distance_cmds:
             cmd.add_argument(
+                '--jw',
                 '--jaro-winkler',
+                dest='jaro_winkler',
                 action='store_true',
                 help="use jaro_winkler."
             )
