@@ -1,11 +1,14 @@
 import codecs
 import csv
+import io
 import os
 import logging
 import glob
 import jaconv
 import traceback
 import sys
+import html2text
+import xml.etree.ElementTree as ET
 
 from pyknp import Juman
 
@@ -21,13 +24,15 @@ class LinkedMrph:
 
 class Words:
 
-    def __init__(self, excludes=[], columns=[]):
+    def __init__(self, excludes=[], columns=[], is_html2text=False, stdin_type=""):
         self.jumanpp = Juman()
         self.hinsi = {}
         self.mrphs = []
         self.lines = []
         self.logger = logging.getLogger(__name__)
         self.columns = columns
+        self.stdin_type = stdin_type
+        self.is_html2text = is_html2text
         self.excludes = []
         for e in excludes:
             self.excludes.extend(glob.glob(e, recursive=True))
@@ -35,7 +40,7 @@ class Words:
 
     def parse(self, path, recursive=True, encoding="utf-8"):
         if path == '-':
-            self.parse_string(sys.stdin.read())
+            self.parse_from_type(io.StringIO(sys.stdin.read()), self.stdin_type)
             return
         if os.path.normpath(path) in self.excludes:
             return
@@ -57,10 +62,25 @@ class Words:
             return
         self.logger.info(file)
         with codecs.open(file, 'r', encoding) as f:
-            if os.path.splitext(file)[1] in [".csv", ".tsv"]:
-                self.parse_from_reader(csv.DictReader(f))
+            ext = os.path.splitext(file)[1]
+            if ext in [".csv", ".tsv"]:
+                self.parse_from_type(f, "csv")
+            elif ext in [".xml"]:
+                self.parse_from_type(f, "xml")
+            elif ext in [".html"]:
+                self.parse_from_type(f, "html")
             else:
                 self.parse_from_reader(f)
+
+    def parse_from_type(self, f, type):
+        if type == "csv":
+            self.parse_from_reader(csv.DictReader(f))
+        elif type == "xml":
+            self.parse_from_reader(self._readxml(f))
+        elif type == "html":
+            self.parse_string(html2text.html2text(f.read()))
+        else:
+            self.parse_from_reader(f)
 
     def parse_from_reader(self, reader):
         for r in reader:
@@ -74,10 +94,15 @@ class Words:
                 else:
                     for s in r.values():
                         self.parse_string(s)
+            elif isinstance(r, ET.Element):
+                if r.text:
+                    self.parse_string(r.text)
             else:
                 self.parse_string(r)
 
     def parse_string(self, str):
+        if self.is_html2text:
+            str = html2text.html2text(str)
         for s in str.split('\n'):
             self._parse_string(s)
 
@@ -142,3 +167,7 @@ class Words:
         # yomi はひらがなとカタカナが入る場合がある
         # 同じ音の場合は編集距離が 0 になってほしいので合わせる
         mrph.yomi = jaconv.kata2hira(mrph.yomi)
+
+    def _readxml(self, file):
+        tree = ET.parse(file)
+        return tree.iter()

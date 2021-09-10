@@ -1,0 +1,41 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: 'BREAKING CHANGES（後方互換性がない修正）'
+    labels:
+      - 'BREAKING CHANGE'
+  - title: 'Features（後方互換性がある機能追加）'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: 'Fixes（後方互換性がある軽微な修正）'
+    labels:
+      - 'fix'
+      - 'bug'
+      - 'security'
+  - title: 'Documentation'
+    labels:
+      - 'document'
+      - 'documentation'
+  - title: 'Internal improvement'
+    labels:
+      - 'ci'
+exclude-labels:
+  - 'dependencies'
+  - 'renovate'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+version-resolver:
+  major:
+    labels:
+      - 'BREAKING CHANGE'
+  minor:
+    labels:
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'fix'
+      - 'bug'
+      - 'security'
+  default: patch
