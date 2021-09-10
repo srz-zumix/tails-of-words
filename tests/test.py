@@ -52,12 +52,12 @@ class test_cli(test_base):
             self.assertEqual(e.code, 0)
 
     def test_version(self):
-        opt = [ '--dumpversion' ]
+        opt = ['--dumpversion']
         self.cli_run(opt)
 
     def test_show(self):
         sys.stdin = StringIO("テストだよ")
-        opt = [ 'show', '-' ]
+        opt = ['show', '-']
         self.cli_run(opt)
         output = self.stdoout()
         # eprint(output)
