@@ -273,7 +273,7 @@ class CLI:
         args = self.parser.parse_args(argv)
         if args.config:
             config = yaml.safe_load(args.config)
-            for k,v in config.items():
+            for k, v in config.items():
                 if k in args:
                     setattr(args, k, v)
         numeric_level = getattr(logging, args.log.upper(), None)
