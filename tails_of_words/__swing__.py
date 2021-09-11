@@ -79,11 +79,20 @@ class Section:
         return "{}: {} vs {} : {:.2f}".format(self.distance.format(), a, b, self.score)
 
 
+class SwingOption:
+
+    def __init__(self, exclude_alphabet, exclude_ascii, jaro_winkler):
+        self.exclude_alphabet = exclude_alphabet
+        self.exclude_ascii = exclude_ascii
+        self.jaro_winkler = jaro_winkler
+
+
 class Swing:
 
-    def __init__(self, jaro_winkler):
+    def __init__(self, option):
         global use_jaro_winkler
-        use_jaro_winkler = jaro_winkler
+        self.option = option
+        use_jaro_winkler = option.jaro_winkler
         self.logger = logging.getLogger(__name__)
 
     def distance(self, words, ids):
@@ -108,9 +117,17 @@ class Swing:
             yield sorted(filter(lambda x: x.score > 0, d), reverse=True, key=lambda x: x.score)
 
     def target_filter(self, midasi, mrphs):
-        # 数字のみは除外
+        # 数値は除外
         if midasi.isnumeric():
             return False
+        # 英数字も除外
+        if self.option.exclude_alphabet:
+            if midasi.encode('utf-8').isalnum():
+                return False
+        # ASCII のみは除外
+        if self.option.exclude_ascii:
+            if midasi.encode('utf-8').isascii():
+                return False
         # 数詞は除外
         mrph = mrphs[0].mrph
         if mrph.hinsi_id == 6 and mrph.bunrui_id == 7:
