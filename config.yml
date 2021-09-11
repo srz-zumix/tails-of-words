@@ -1,0 +1,5 @@
+log: DEBUG
+html2test: True
+exclude_ascii: True
+exclude_alphabet: True
+jaro_winkler: True

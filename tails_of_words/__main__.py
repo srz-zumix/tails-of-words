@@ -1,11 +1,13 @@
 import logging
 import json
+import yaml
 
 from . import __version__ as VERSION
 from .__words__ import Words
-from .__swing__ import Swing
+from .__swing__ import Swing, SwingOption
 from .__swing__ import Section
 from argparse import ArgumentParser
+from argparse import FileType
 
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 USER_CHOICE = LOG_LEVEL+list(map(lambda w: w.lower(), LOG_LEVEL))
@@ -16,13 +18,12 @@ class Process:
 
     def __init__(self, args):
         self.ids = [6, 15]
+        self.args = args
         if len(args.hinsi):
             self.ids = []
             for x in args.hinsi:
                 for id in x.split(','):
                     self.ids.append(int(id))
-        if 'jaro_winkler' in args:
-            self.use_jaro_winkler = args.jaro_winkler
         self.words = self.get_words(args.sources, args.exclude, args.column, args.html2text, args.stdin_type)
 
     def get_words(self, sources, excludes, column, is_html2text, stdin_type):
@@ -39,7 +40,11 @@ class Process:
         return d
 
     def _swing(self):
-        return Swing(self.use_jaro_winkler)
+        option = SwingOption(
+            self.args.exclude_alphabet,
+            self.args.exclude_ascii,
+            self.args.jaro_winkler)
+        return Swing(option)
 
     def get_distance(self):
         for x in self._swing().distance(self.words, self.ids):
@@ -125,6 +130,12 @@ class CLI:
             help="set log level"
         )
         self.parser.add_argument(
+            '-c',
+            '--config',
+            type=FileType("r"),
+            help="config.yml file path"
+        )
+        self.parser.add_argument(
             '-f',
             '--stdin-type',
             '--stdin-format',
@@ -197,6 +208,20 @@ class CLI:
                 action='store_true',
                 help="use jaro_winkler."
             )
+            cmd.add_argument(
+                '--no-alnum',
+                '--exclude-alphabet',
+                dest='exclude_alphabet',
+                action='store_true',
+                help="exclude isalpha or isalnum string."
+            )
+            cmd.add_argument(
+                '--no-ascii',
+                '--exclude-ascii',
+                dest='exclude_ascii',
+                action='store_true',
+                help="exclude isascii string."
+            )
 
         input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
         for cmd in input_file_cmds:
@@ -246,6 +271,11 @@ class CLI:
 
     def parse_command_line(self, argv):
         args = self.parser.parse_args(argv)
+        if args.config:
+            config = yaml.safe_load(args.config)
+            for k, v in config.items():
+                if k in args:
+                    setattr(args, k, v)
         numeric_level = getattr(logging, args.log.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log)
