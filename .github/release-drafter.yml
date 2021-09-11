@@ -39,3 +39,9 @@ version-resolver:
       - 'bug'
       - 'security'
   default: patch
+template: |
+  [Compare $PREVIOUS_TAG with v$RESOLVED_VERSION](https://github.com/srz-zumix/tails-of-words/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION)
+
+  ## Changes
+
+  $CHANGES
