@@ -6,6 +6,7 @@ from . import __version__ as VERSION
 from .__words__ import Words
 from .__swing__ import Swing, SwingOption
 from .__swing__ import Section
+from .__config__ import *
 from argparse import ArgumentParser
 from argparse import FileType
 
@@ -17,6 +18,7 @@ TYPE_CHOICE = ['csv', 'xml', 'html', 'plain']
 class Process:
 
     def __init__(self, args):
+        self.logger = logging.getLogger(__name__)
         self.ids = [6, 15]
         self.args = args
         if len(args.hinsi):
@@ -25,6 +27,7 @@ class Process:
                 for id in x.split(','):
                     self.ids.append(int(id))
         self.words = self.get_words(args.sources, args.exclude, args.column, args.html2text, args.stdin_type)
+        self.logger.debug(vars(score_config))
 
     def get_words(self, sources, excludes, column, is_html2text, stdin_type):
         words = Words(excludes, column, is_html2text, stdin_type)
@@ -276,6 +279,9 @@ class CLI:
             for k, v in config.items():
                 if k in args:
                     setattr(args, k, v)
+                elif k == "score_config":
+                    for sk,sv in v.items():
+                        setattr(score_config, sk, sv)
         numeric_level = getattr(logging, args.log.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: %s' % args.log)

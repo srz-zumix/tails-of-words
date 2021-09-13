@@ -28,6 +28,13 @@ $ echo コンピュータとコンピューター | tails-of-words swing -
 1, 0.86, 0.86: コンピュータ(1) vs コンピューター(1) : 1.03
 ```
 
+```sh
+curl -fsSL https://srz-zumix.blogspot.com/2021/09/cedec.html | tails-of-words --stdin-type html swing --exclude-alphabet --exclude-ascii -t 1 -
+1, 0.75, 0.75: ブクログ(1) vs ブログ(6) : 1.29
+1, 0.67, 0.67: ホスト(1) vs リスト(3) : 1.00
+1, 0.67, 0.67: ホスト(1) vs テスト(3) : 1.00
+```
+
 ### Help
 
 ```sh
@@ -54,3 +61,8 @@ optional arguments:
 * [CEDEC2021: ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み](https://cedec.cesa.or.jp/2021/session/detail/s6049c15401f23)
   * [ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み - Speaker Deck](https://speakerdeck.com/cygames/kemuzhi-zuo-xiao-lu-hua-falsetamefalseainiyoruhua-xiang-ren-shi-zi-ran-yan-yu-chu-li-hefalsequ-rizu-mi) 
 * [JUMAN品詞体系 | Yuta Hayashibe](https://hayashibe.jp/tr/juman/dictionary/pos)
+
+## 貢献
+
+このリポジトリは表記ゆれ検出の実験的な実装をしています。
+アイディアや PR を歓迎します。
