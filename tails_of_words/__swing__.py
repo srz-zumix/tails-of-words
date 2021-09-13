@@ -1,8 +1,8 @@
 import re
 import logging
 
+from .__config__ import score_config
 from .__distance__ import Distance
-from .__config__ import *
 
 re_katakana = re.compile(r'[\u30A1-\u30F4ー]+')
 use_jaro_winkler = False

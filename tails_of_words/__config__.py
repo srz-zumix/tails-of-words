@@ -12,4 +12,5 @@ class ScoreConfig:
         # 片方を内包している場合にかける値
         self.inclue_other_one = 0.5
 
+
 score_config = ScoreConfig()
