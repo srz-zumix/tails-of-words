@@ -280,7 +280,7 @@ class CLI:
                 if k in args:
                     setattr(args, k, v)
                 elif k == "score_config":
-                    for sk,sv in v.items():
+                    for sk, sv in v.items():
                         setattr(score_config, sk, sv)
         numeric_level = getattr(logging, args.log.upper(), None)
         if not isinstance(numeric_level, int):
@@ -295,7 +295,7 @@ class CLI:
         proc = self.get_process(args)
         with JsonWritter(args.output) as jw:
             for v in proc.get_hinsi().values():
-                for word,arr in v:
+                for word, arr in v:
                     print("{} : {}".format(len(arr), word))
                     jw.add((word, len(arr)))
             jw.dump()

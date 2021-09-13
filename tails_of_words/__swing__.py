@@ -13,9 +13,9 @@ def calc_socre_include(score, a, b):
     if a in b:
         # 長音ルールのゆれはスコアアップ
         if (a + "ー") == b and re_katakana.fullmatch(a):
-            return score*score_config.diff_only_long_vowel_scale
+            return score * score_config.diff_only_long_vowel_scale
         else:
-            return score*score_config.inclue_other_one
+            return score * score_config.inclue_other_one
     return score
 
 
