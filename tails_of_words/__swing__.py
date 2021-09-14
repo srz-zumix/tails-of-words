@@ -1,6 +1,7 @@
 import re
 import logging
 
+from .__config__ import score_config
 from .__distance__ import Distance
 
 re_katakana = re.compile(r'[\u30A1-\u30F4ー]+')
@@ -12,9 +13,9 @@ def calc_socre_include(score, a, b):
     if a in b:
         # 長音ルールのゆれはスコアアップ
         if (a + "ー") == b and re_katakana.fullmatch(a):
-            return score*1.2
+            return score * score_config.diff_only_long_vowel_scale
         else:
-            return score*0.5
+            return score * score_config.inclue_other_one
     return score
 
 
@@ -25,16 +26,16 @@ def calc_score(section):
     la = len(section.a.mrphs)
     lb = len(section.b.mrphs)
     ls = (1.0 - min(la,lb)/(la+lb)*2)
-    score *= 1.0 + ls
+    score *= 1.0 + (ls * score_config.occurrences_sacle)
     # 読みが同じならスコアアップ
     if section.distance.normalized_distance().yomi >= 1.0:
-        score *= 1.2
+        score *= score_config.same_yomi_scale
     score = calc_socre_include(score, section.a.midasi, section.b.midasi)
     score = calc_socre_include(score, section.b.midasi, section.a.midasi)
     # 読みが同じで、読みから長音が消えてる場合、スコアを下げる
     if section.a.get_rep_mrph().yomi == section.b.get_rep_mrph().yomi:
         if 'ー' not in section.a.get_rep_mrph().yomi and ('ー' in section.a.midasi or 'ー' in section.b.midasi):
-            score *= 0.8
+            score *= score_config.same_yomi_with_remove_long_vowel_scale
     return score
 
 class SectionPoint:
