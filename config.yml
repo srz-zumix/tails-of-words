@@ -3,6 +3,7 @@ html2test: True
 exclude_ascii: True
 exclude_alphabet: True
 jaro_winkler: True
+knp: False
 
 # スコア計算の設定値
 score_config:

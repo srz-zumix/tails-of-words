@@ -71,22 +71,16 @@ class test_words(test_base):
     def tearDown(self):
         return super(test_words, self).tearDown()
 
-    def test_link(self):
+    def test_simple(self):
         words = Words()
         words.parse_string("テストだよ")
         self.assertEqual(1, len(words.lines))
-        self.assertEqual("テスト", list(words.hinsi[6].keys())[0])
-        linkedMrph = words.lines[0]
-        self.assertEqual(None, linkedMrph.prev)
-        prev = linkedMrph
-        linkedMrph = linkedMrph.next
-        self.assertEqual(prev, linkedMrph.prev)
-        self.assertEqual("だ", linkedMrph.mrph.midasi)
-        prev = linkedMrph
-        linkedMrph = linkedMrph.next
-        self.assertEqual(prev, linkedMrph.prev)
-        self.assertEqual("よ", linkedMrph.mrph.midasi)
-        self.assertEqual(None, linkedMrph.next)
+
+    def test_strip(self):
+        words = Words()
+        words.parse_string(" テスト@だよ ")
+        self.assertEqual(1, len(words.lines))
+        self.assertEqual("テスト@だよ", words.lines[0].midasi)
 
 
 if __name__ == '__main__':

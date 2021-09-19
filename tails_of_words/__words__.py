@@ -5,29 +5,61 @@ import os
 import logging
 import glob
 import jaconv
-import traceback
 import sys
 import html2text
 import xml.etree.ElementTree as ET
 
-from pyknp import Juman
+from .__analyzer__ import JumanAnalyzer
+from .__analyzer__ import KnpAnalyzer
+from .__analyzer__ import NamedEntry
 
 # zen2han = str.maketrans({chr(0xFF01 + i): chr(0x21 + i) for i in range(94)})
 
 
-class LinkedMrph:
+def attr_join(mrphs, name):
+    return "".join(getattr(x, name) for x in mrphs)
 
-    def __init__(self, mrph, prev, next):
-        self.mrph = mrph
-        self.prev = prev
-        self.next = next
+
+def attr_one(mrphs, name, default_value=None):
+    r = None
+    for x in mrphs:
+        if r is None:
+            r = getattr(x, name)
+        elif r != getattr(x, name):
+            return default_value
+    return r
+
+
+class WordUnit:
+
+    def __init__(self, entries):
+        if isinstance(entries, NamedEntry):
+            self.mrphs = entries.mrph_list()
+            self.bunrui = entries.bunrui
+            self.bunrui_id = entries.bunrui_id
+            self.hinsi = attr_one(self.mrphs, "hinsi", entries.hinsi)
+            self.hinsi_id = attr_one(self.mrphs, "hinsi_id", entries.hinsi_id)
+            self.unit_type = 'NE'
+        else:
+            self.mrphs = [entries]
+            self.bunrui = entries.bunrui
+            self.bunrui_id = entries.bunrui_id
+            self.hinsi = entries.hinsi
+            self.hinsi_id = entries.hinsi_id
+            self.unit_type = 'mrph'
+        self.midasi = attr_join(self.mrphs, 'midasi')
+        self.yomi = attr_join(self.mrphs, 'yomi')
+        self.span = (self.mrphs[0].span[0], self.mrphs[-1].span[1])
+
 
 class Words:
 
-    def __init__(self, excludes=[], columns=[], is_html2text=False, stdin_type=""):
-        self.jumanpp = Juman()
+    def __init__(self, excludes=[], columns=[], is_html2text=False, stdin_type="", knp=False):
+        if knp:
+            self.analyzer = KnpAnalyzer()
+        else:
+            self.analyzer = JumanAnalyzer()
         self.hinsi = {}
-        self.mrphs = []
         self.lines = []
         self.logger = logging.getLogger(__name__)
         self.columns = columns
@@ -107,61 +139,29 @@ class Words:
             self._parse_string(s)
 
     def _parse_string(self, str):
-        str = self.normalize(str)
         if len(str):
             result = self._analyze(str)
             if result:
+                self.lines.append(result)
                 for mrph in result.mrph_list():
                     self.normalize_yomi(mrph)
-                self.mrphs.append(result.mrph_list())
-                first = None
-                prev = None
-                curr = None
-                for next in result.mrph_list():
-                    prev = self.append(prev, curr, next)
-                    curr = next
-                    if first is None:
-                        first = prev
-                last = self.append(prev, curr, None)
-                if first:
-                    self.lines.append(first)
-                elif last:
-                    self.lines.append(last)
+                    self.append(mrph)
+                for ne in result.named_entry_list():
+                    self.append(ne)
 
     def _analyze(self, str):
-        try:
-            return self.jumanpp.analysis(str)
-        except Exception as e:
-            self.logger.debug(str)
-            self.logger.error(traceback.format_exc())
-        return None
+        return self.analyzer.analysis(str)
 
-    def append(self, prev, curr, next):
-        if curr is None:
-            return None
-
-        mrph = LinkedMrph(curr, prev, None)
-        if prev:
-            prev.next = mrph
-        id = curr.hinsi_id
-        if id not in self.hinsi:
-            self.hinsi[id] = {}
-        midasi = curr.midasi
-        if midasi not in self.hinsi[id]:
-            self.hinsi[id][midasi] = []
-        self.hinsi[id][midasi].append(mrph)
-        return mrph
-
-    def normalize(self, s):
-        # えー！？が１つの名詞になってしまうので「！・？」は半角にする
-        s = s.replace('！','!').replace('？','?')
-        # https://qiita.com/NLPingu/items/3cd77eb2421283b851b4
-        # ",@,# は全角にする
-        s = s.replace('"','”').replace('@','＠').replace('#','＃')
-        # 半角スペース+アルファベットがあると "\ A" のような出力がされ、
-        # 半角スペースで split しているため配列インデックスが想定とずれてエラーとなる
-        # e.g. ValueError: invalid literal for int() with base 10: '\\'
-        return s.replace(' ', '　').strip()
+    def append(self, mrph):
+        unit = WordUnit(mrph)
+        midasi = unit.midasi
+        hinsi_id = unit.hinsi_id
+        if hinsi_id not in self.hinsi:
+            self.hinsi[hinsi_id] = {}
+        if midasi not in self.hinsi[hinsi_id]:
+            self.hinsi[hinsi_id][midasi] = []
+        self.hinsi[hinsi_id][midasi].append(unit)
+        return unit
 
     def normalize_yomi(self, mrph):
         # yomi はひらがなとカタカナが入る場合がある
