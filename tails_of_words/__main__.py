@@ -36,12 +36,12 @@ class Process:
         return words
 
     def get_hinsi(self):
-        d = {}
+        d = []
         has_all = any(x <= 0 for x in self.ids)
         for id in self.words.hinsi.keys():
             if has_all or (id in self.ids):
-                d[id] = sorted(self.words.hinsi[id].items(), key=lambda x:len(x[1]))
-        return d
+                d.extend(self.words.hinsi[id].items())
+        return sorted(d, key=lambda x:len(x[1]))
 
     def _swing(self):
         option = SwingOption(
@@ -315,14 +315,13 @@ class CLI:
         proc = self.get_process(args)
         vars = args.attr
         with JsonWritter(args.output) as jw:
-            for v in proc.get_hinsi().values():
-                for word, arr in v:
-                    attr = ','.join(self.get_variables(arr[0], vars))
-                    if attr:
-                        print("{} : {} ({})".format(len(arr), word, attr))
-                    else:
-                        print("{} : {}".format(len(arr), word))
-                    jw.add((word, len(arr)))
+            for word, arr in proc.get_hinsi():
+                attr = ','.join(self.get_variables(arr[0], vars))
+                if attr:
+                    print("{} : {} ({})".format(len(arr), word, attr))
+                else:
+                    print("{} : {}".format(len(arr), word))
+                jw.add((word, len(arr)))
             jw.dump()
 
     def command_distance(self, args):
