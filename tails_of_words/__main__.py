@@ -41,7 +41,7 @@ class Process:
         for id in self.words.hinsi.keys():
             if has_all or (id in self.ids):
                 d.extend(self.words.hinsi[id].items())
-        return sorted(d, key=lambda x:len(x[1]))
+        return sorted(d, key=lambda x: len(x[1]))
 
     def _swing(self):
         option = SwingOption(

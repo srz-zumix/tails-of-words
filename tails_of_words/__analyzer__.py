@@ -24,11 +24,11 @@ def _juman_msrs(str):
 
 def _knp_msrs(str):
     msrs = [
-        (re.finditer(r'!',  str), r'!', r'！'),
+        (re.finditer(r'!', str), r'!', r'！'),
+        (re.finditer('\t', str), '\t', r'　'),
+        (re.finditer(r'/', str), r'/', r'／'),
         (re.finditer(r'\+', str), r'+', r'＋'),
         (re.finditer(r'\*', str), r'*', r'＊'),
-        (re.finditer('\t',  str), '\t', r'　'),
-        (re.finditer(r'/',  str), r'/', r'／'),
     ]
     msrs.extend(_juman_msrs(str))
     return msrs
@@ -36,7 +36,7 @@ def _knp_msrs(str):
 
 def _normalize(str, msrs):
     # https://qiita.com/NLPingu/items/3cd77eb2421283b851b4
-    for _,s,r in msrs:
+    for _, s, r in msrs:
         str = str.replace(s, r)
     return str
 
@@ -67,13 +67,13 @@ def _revert_normalize_mrphs(msrs, mrphs):
 
 def get_named_entry_bunrui(name):
     bunrui_kv = {
-        "ORGANIZATION": {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "組織名",  'bunrui_id': 6},
+        "ORGANIZATION": {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "組織名", 'bunrui_id': 6},
         "DATE"        : {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "時相名詞", 'bunrui_id': 10},
-        "PERSON"      : {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "人名",    'bunrui_id': 5},
+        "PERSON"      : {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "人名", 'bunrui_id': 5},
     }
     if name in bunrui_kv:
         return bunrui_kv[name]
-    return { 'hinsi': "未定義語", 'hinsi_id': 15, 'bunrui': "*", 'bunrui_id': 0 }
+    return {'hinsi': "未定義語", 'hinsi_id': 15, 'bunrui': "*", 'bunrui_id': 0}
 
 
 class NamedEntry:
@@ -127,7 +127,7 @@ class JumanAnalyzer:
                 r = JumanAnalyzer.Result(self.jumanpp.analysis(str))
                 _revert_normalize_mrphs(msrs, r.mrph_list())
                 return r
-            except Exception as e:
+            except Exception:
                 self.logger.debug(str)
                 self.logger.error(traceback.format_exc())
         return None
@@ -183,13 +183,13 @@ class KnpAnalyzer:
         self.logger = logging.getLogger(__name__)
 
     def analysis(self, str):
-        (str,msrs) = self.normalize(str)
+        (str, msrs) = self.normalize(str)
         if len(str) > 0:
             try:
                 r = KnpAnalyzer.Result(self.knp.parse(str))
                 _revert_normalize_mrphs(msrs, r.mrph_list())
                 return r
-            except Exception as e:
+            except Exception:
                 self.logger.debug(str)
                 self.logger.error(traceback.format_exc())
         return None
