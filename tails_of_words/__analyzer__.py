@@ -21,16 +21,18 @@ def _juman_msrs(str):
     ]
     return msrs
 
+
 def _knp_msrs(str):
     msrs = [
-        (re.finditer(r'!', str), r'!', r'！'),
-        (re.finditer('\+', str), r'+', r'＋'),
-        (re.finditer('\*', str), r'*', r'＊'),
-        (re.finditer('\t', str), '\t', r'　'),
-        (re.finditer(r'/', str), r'/', r'／'),
+        (re.finditer(r'!',  str), r'!', r'！'),
+        (re.finditer(r'\+', str), r'+', r'＋'),
+        (re.finditer(r'\*', str), r'*', r'＊'),
+        (re.finditer('\t',  str), '\t', r'　'),
+        (re.finditer(r'/',  str), r'/', r'／'),
     ]
     msrs.extend(_juman_msrs(str))
     return msrs
+
 
 def _normalize(str, msrs):
     # https://qiita.com/NLPingu/items/3cd77eb2421283b851b4
@@ -42,19 +44,19 @@ def _normalize(str, msrs):
 def _span_mrphs(mrphs):
     start = 0
     for mrph in mrphs:
-        l = len(mrph.midasi)
+        length = len(mrph.midasi)
         if mrph.span[0] == mrph.span[1]:
-            mrph.span = (start, start+l)
-        start += l
+            mrph.span = (start, start + length)
+        start += length
 
 
 def _revert_normalize_mrphs(msrs, mrphs):
     _span_mrphs(mrphs)
     for msr in msrs:
         for m in msr[0]:
-            (mstart,mend) = m.span()
+            (mstart, mend) = m.span()
             for mrph in mrphs:
-                (start,end) = mrph.span
+                (start, end) = mrph.span
                 if (start <= mstart) and (mend <= end):
                     dstart = mstart - start
                     dend = dstart + (mend - mstart)
@@ -65,13 +67,14 @@ def _revert_normalize_mrphs(msrs, mrphs):
 
 def get_named_entry_bunrui(name):
     bunrui_kv = {
-        "ORGANIZATION": { 'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "組織名",  'bunrui_id': 6 },
-        "DATE"        : { 'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "時相名詞", 'bunrui_id': 10 },
-        "PERSON"      : { 'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "人名",    'bunrui_id': 5 },
+        "ORGANIZATION": {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "組織名",  'bunrui_id': 6},
+        "DATE"        : {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "時相名詞", 'bunrui_id': 10},
+        "PERSON"      : {'hinsi': "名詞", 'hinsi_id': 6, 'bunrui': "人名",    'bunrui_id': 5},
     }
     if name in bunrui_kv:
         return bunrui_kv[name]
     return { 'hinsi': "未定義語", 'hinsi_id': 15, 'bunrui': "*", 'bunrui_id': 0 }
+
 
 class NamedEntry:
 

@@ -10,17 +10,17 @@ COPY --from=jumanpp /usr/local/share/jumanpp /usr/local/share/jumanpp
 RUN apk add --update --no-cache musl-dev gcc g++ boost make wget zlib-dev
 # juman
 WORKDIR /tmp/juman-${JUMAN_VERSION}
-RUN wget http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/juman/juman-${JUMAN_VERSION}.tar.bz2 -O /tmp/juman.tar.bz2 &&\ 
-    tar xf /tmp/juman.tar.bz2 -C /tmp
-RUN ./configure --prefix=/usr/local/ && \
+RUN wget -q http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/juman/juman-${JUMAN_VERSION}.tar.bz2 -O /tmp/juman.tar.bz2 &&\ 
+    tar xf /tmp/juman.tar.bz2 -C /tmp && \
+    ./configure --prefix=/usr/local/ && \
     make && \
     make install
 
 # knp
 WORKDIR /tmp/knp-${KNP_VERSION} 
-RUN wget http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/knp/knp-${KNP_VERSION}.tar.bz2 -O /tmp/knp.tar.bz2 && \
-    tar xf /tmp/knp.tar.bz2 -C /tmp
-RUN ./configure --prefix=/usr/local/ --with-juman-prefix=/usr/local/ && \
+RUN wget -q http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/knp/knp-${KNP_VERSION}.tar.bz2 -O /tmp/knp.tar.bz2 && \
+    tar xf /tmp/knp.tar.bz2 -C /tmp && \
+    ./configure --prefix=/usr/local/ --with-juman-prefix=/usr/local/ && \
     make && \
     make install
 
