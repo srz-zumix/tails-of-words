@@ -26,21 +26,22 @@ class Process:
             for x in args.hinsi:
                 for id in x.split(','):
                     self.ids.append(int(id))
-        self.words = self.get_words(args.sources, args.exclude, args.column, args.html2text, args.stdin_type)
+        self.words = self.get_words(args.sources, args.exclude, args.column, args.html2text, args.stdin_type, args.knp)
         self.logger.debug(vars(score_config))
 
-    def get_words(self, sources, excludes, column, is_html2text, stdin_type):
-        words = Words(excludes, column, is_html2text, stdin_type)
+    def get_words(self, sources, excludes, column, is_html2text, stdin_type, knp):
+        words = Words(excludes, column, is_html2text, stdin_type, knp)
         for src in sources:
             words.parse(src)
         return words
 
     def get_hinsi(self):
-        d = {}
-        for id in self.ids:
-            if id in self.words.hinsi:
-                d[id] = sorted(self.words.hinsi[id].items(), key=lambda x:len(x[1]))
-        return d
+        d = []
+        has_all = any(x <= 0 for x in self.ids)
+        for id in self.words.hinsi.keys():
+            if has_all or (id in self.ids):
+                d.extend(self.words.hinsi[id].items())
+        return sorted(d, key=lambda x: len(x[1]))
 
     def _swing(self):
         option = SwingOption(
@@ -97,7 +98,7 @@ class JsonWritter:
                         "jaro_winkler": obj.distance.jaro_winkler.__dict__
                     },
                     "score": obj.score,
-                    "mrphs": [obj.a.get_rep_mrph_dict(), obj.b.get_rep_mrph_dict()],
+                    "mrphs": [obj.a.get_rep_unit_dict(), obj.b.get_rep_unit_dict()],
                 })
             elif isinstance(obj, tuple):
                 self.obj[obj[0]] = obj[1]
@@ -154,6 +155,11 @@ class CLI:
             action='store_true',
             help="Convert input text with html2text"
         )
+        self.parser.add_argument(
+            '--knp',
+            action='store_true',
+            help="use knp."
+        )
 
         subparser = self.parser.add_subparsers()
 
@@ -174,13 +180,6 @@ class CLI:
             description='show words',
             help='show words. see `show -h`')
         show_cmd.set_defaults(handler=self.command_show)
-        show_cmd.add_argument(
-            '-a',
-            '--attr',
-            action='append',
-            default=[],
-            help="set show mrph attributes"
-        )
 
         swing_cmd = subparser.add_parser(
             'swing',
@@ -201,6 +200,16 @@ class CLI:
             default=0.0,
             help="Display words whose score exceeds the threshold."
         )
+
+        mrphs_show_cmds = [show_cmd, count_cmd]
+        for cmd in mrphs_show_cmds:
+            cmd.add_argument(
+                '-a',
+                '--attr',
+                action='append',
+                default=[],
+                help="set show mrph attributes"
+            )
 
         distance_cmds = [distance_cmd, swing_cmd]
         for cmd in distance_cmds:
@@ -291,13 +300,28 @@ class CLI:
     def get_process(self, args):
         return Process(args)
 
+    def get_variables(self, mrph, vars):
+        s = []
+        for v in vars:
+            id = v + "_id"
+            if hasattr(mrph, v):
+                if hasattr(mrph, id):
+                    s.append("{}({})".format(getattr(mrph, v), getattr(mrph, id)))
+                else:
+                    s.append("{}".format(getattr(mrph, v)))
+        return s
+
     def command_count(self, args):
         proc = self.get_process(args)
+        vars = args.attr
         with JsonWritter(args.output) as jw:
-            for v in proc.get_hinsi().values():
-                for word, arr in v:
+            for word, arr in proc.get_hinsi():
+                attr = ','.join(self.get_variables(arr[0], vars))
+                if attr:
+                    print("{} : {} ({})".format(len(arr), word, attr))
+                else:
                     print("{} : {}".format(len(arr), word))
-                    jw.add((word, len(arr)))
+                jw.add((word, len(arr)))
             jw.dump()
 
     def command_distance(self, args):
@@ -316,27 +340,16 @@ class CLI:
                 print(d.format())
             jw.dump()
 
-    def get_variables(self, mrph, vars):
-        s = []
-        for v in vars:
-            id = v + "_id"
-            if hasattr(mrph, v):
-                if hasattr(mrph, id):
-                    s.append("{}({})".format(getattr(mrph, v), getattr(mrph, id)))
-                else:
-                    s.append("{}".format(getattr(mrph, v)))
-        return s
-
     def command_show(self, args):
         proc = self.get_process(args)
         vars = args.attr
         if len(vars) == 0:
             vars.append('hinsi')
-        for mrphs in proc.words.mrphs:
+        for line in proc.words.lines:
             infos = []
             s = ""
             prev = ""
-            for mrph in mrphs:
+            for mrph in line.mrph_list():
                 infos.insert(0, "{}└ {}".format(prev, ','.join(self.get_variables(mrph, vars))))
                 prev = "\033[34m{}\033[33m\033[4m{}\033[0m".format(s, mrph.midasi)
                 s += mrph.midasi
