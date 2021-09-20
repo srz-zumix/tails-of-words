@@ -11,8 +11,8 @@ RUN apk add --update --no-cache musl-dev gcc g++ boost make wget zlib-dev
 # juman
 WORKDIR /tmp/juman-${JUMAN_VERSION}
 RUN wget -q http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/juman/juman-${JUMAN_VERSION}.tar.bz2 -O /tmp/juman.tar.bz2 &&\ 
-    tar xf /tmp/juman.tar.bz2 -C /tmp
-RUN ./configure --prefix=/usr/local/ && \
+    tar xf /tmp/juman.tar.bz2 -C /tmp && \
+    ./configure --prefix=/usr/local/ && \
     make && \
     make install
 
