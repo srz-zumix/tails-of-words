@@ -4,9 +4,7 @@ FROM python:3.8-alpine as knp
 ARG KNP_VERSION=4.20
 ARG JUMAN_VERSION=7.01
 
-COPY --from=jumanpp /usr/local/bin/jumanpp /usr/local/bin/jumanpp
-COPY --from=jumanpp /usr/local/share/jumanpp /usr/local/share/jumanpp
-
+ENV LANG=C.UTF-8
 RUN apk add --update --no-cache musl-dev gcc g++ boost make wget zlib-dev
 # juman
 WORKDIR /tmp/juman-${JUMAN_VERSION}
