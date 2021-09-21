@@ -27,7 +27,7 @@ orbs:
 workflows:
   build:
     jobs:
-      - create_image:
+      - create_image
           # filters:
           #   branches:
           #     only: main
