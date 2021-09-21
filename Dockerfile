@@ -4,10 +4,10 @@ FROM python:3.8-alpine as knp
 ARG KNP_VERSION=4.20
 ARG JUMAN_VERSION=7.01
 
-COPY --from=jumanpp /usr/local/bin/jumanpp /usr/local/bin/jumanpp
-COPY --from=jumanpp /usr/local/share/jumanpp /usr/local/share/jumanpp
+ENV LANG=C.UTF-8
 
-RUN apk add --update --no-cache musl-dev gcc g++ boost make wget zlib-dev
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.12/main' >> /etc/apk/repositories && \
+    apk add --update --no-cache musl-dev gcc=9.3.0-r2 g++=9.3.0-r2 boost make wget zlib-dev
 # juman
 WORKDIR /tmp/juman-${JUMAN_VERSION}
 RUN wget -q http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/juman/juman-${JUMAN_VERSION}.tar.bz2 -O /tmp/juman.tar.bz2 &&\ 
@@ -41,6 +41,8 @@ RUN mkdir bin && mkdir lib && mkdir share && \
 #  main  #
 ##########
 FROM python:3.8-alpine
+
+ENV LANG=C.UTF-8
 
 RUN apk add --update --no-cache musl-dev gcc boost curl
 COPY --from=knp /tmp/local /usr/local
