@@ -6,6 +6,8 @@ ARG JUMAN_VERSION=7.01
 
 ENV LANG=C.UTF-8
 
+# juman: ftbfs with GCC-10
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=957392
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.12/main' >> /etc/apk/repositories && \
     apk add --update --no-cache musl-dev gcc=9.3.0-r2 g++=9.3.0-r2 boost make wget zlib-dev
 # juman
