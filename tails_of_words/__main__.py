@@ -47,7 +47,8 @@ class Process:
         option = SwingOption(
             self.args.exclude_alphabet,
             self.args.exclude_ascii,
-            self.args.jaro_winkler)
+            self.args.jaro_winkler,
+            self.args.damerau_levenshtein)
         return Swing(option)
 
     def get_distance(self):
@@ -219,6 +220,13 @@ class CLI:
                 dest='jaro_winkler',
                 action='store_true',
                 help="use jaro_winkler."
+            )
+            cmd.add_argument(
+                '--damerau',
+                '--damerau-levenshtein',
+                dest='damerau_levenshtein',
+                action='store_true',
+                help="use damerau_levenshtein."
             )
             cmd.add_argument(
                 '--no-alnum',

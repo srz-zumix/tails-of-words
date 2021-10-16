@@ -5,7 +5,6 @@ from .__config__ import score_config
 from .__distance__ import Distance
 
 re_katakana = re.compile(r'[\u30A1-\u30F4ー]+')
-use_jaro_winkler = False
 
 
 def calc_socre_include(score, a, b):
@@ -79,7 +78,7 @@ class Section:
     def __init__(self, a, b) -> None:
         self.a = a
         self.b = b
-        self.distance = Distance(a.get_rep_unit(), b.get_rep_unit(), use_jaro_winkler)
+        self.distance = Distance(a.get_rep_unit(), b.get_rep_unit())
         self.score = calc_score(self)
 
     def format(self):
@@ -90,18 +89,21 @@ class Section:
 
 class SwingOption:
 
-    def __init__(self, exclude_alphabet, exclude_ascii, jaro_winkler):
+    def __init__(self, exclude_alphabet, exclude_ascii, jaro_winkler, damerau_levenshtein):
         self.exclude_alphabet = exclude_alphabet
         self.exclude_ascii = exclude_ascii
         self.jaro_winkler = jaro_winkler
+        self.damerau_levenshtein = damerau_levenshtein
 
 
 class Swing:
 
     def __init__(self, option):
-        global use_jaro_winkler
         self.option = option
-        use_jaro_winkler = option.jaro_winkler
+        if option.jaro_winkler:
+            Distance.jaro_winkler()
+        if option.damerau_levenshtein:
+            Distance.damerau_levenshtein()
         self.logger = logging.getLogger(__name__)
 
     def distance(self, words, ids):

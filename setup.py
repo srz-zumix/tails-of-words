@@ -42,7 +42,7 @@ setup(
             'tails-of-words = tails_of_words.__main__:main',
         ]
     }
-    , install_requires=['pyknp', 'python-Levenshtein', 'jaconv', 'html2text', 'pyyaml']
+    , install_requires=['pyknp', 'python-Levenshtein', 'pyxDamerauLevenshtein', 'jaconv', 'html2text', 'pyyaml']
     , tests_require=test_deps
     , test_suite="tests.test_suite"
     , extras_require={
