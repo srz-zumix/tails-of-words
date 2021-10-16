@@ -64,7 +64,6 @@ class Distance:
 
     calculator = LevenshteinEditDistanceCalculator()
 
-
     def __init__(self, a, b):
         self.section = [a, b]
         a_midasi = self.normalize(a.midasi)
