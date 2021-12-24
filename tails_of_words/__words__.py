@@ -109,8 +109,8 @@ class Words:
             self.parse_from_reader(csv.DictReader(f))
         elif type == "xml":
             self.parse_from_reader(self._readxml(f))
-        elif type == "html":
-            self.parse_string(html2text.html2text(f.read()))
+        elif type == "html" or type == "htm":
+            self.parse_string(self._html2text(f.read()))
         else:
             self.parse_from_reader(f)
 
@@ -128,13 +128,14 @@ class Words:
                         self.parse_string(s)
             elif isinstance(r, ET.Element):
                 if r.text:
+                    print(r.text)
                     self.parse_string(r.text)
             else:
                 self.parse_string(r)
 
     def parse_string(self, str):
         if self.is_html2text:
-            str = html2text.html2text(str)
+            str = self._html2text(str)
         for s in str.split('\n'):
             self._parse_string(s)
 
@@ -148,6 +149,11 @@ class Words:
                     self.append(mrph)
                 for ne in result.named_entry_list():
                     self.append(ne)
+
+    def _html2text(self, str):
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        return h.handle(str)
 
     def _analyze(self, str):
         return self.analyzer.analysis(str)
