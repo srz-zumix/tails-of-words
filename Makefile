@@ -12,11 +12,11 @@ install: tails_of_words/*.py ## install self
 pytest: ## python test
 	python setup.py test
 
-docker-build:
+docker-build: ## docker build
 	docker build -t tails-of-words .
 
 docker-clean-build:
 	docker build --no-cache -t tails-of-words .
 
-docker-run:
+docker-run: # docker run
 	docker run -it --rm -v ${PWD}:/work -w /work --entrypoint sh tails-of-words

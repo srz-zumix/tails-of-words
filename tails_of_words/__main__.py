@@ -7,6 +7,7 @@ from .__config__ import score_config
 from .__words__ import Words
 from .__swing__ import Swing, SwingOption
 from .__swing__ import Section
+from .__typo__ import TypoCheck, Typo
 from argparse import ArgumentParser
 from argparse import FileType
 
@@ -204,13 +205,20 @@ class CLI:
 
         mrphs_show_cmds = [show_cmd, count_cmd]
         for cmd in mrphs_show_cmds:
+            # https://pyknp.readthedocs.io/en/latest/mrph.html#module-pyknp.juman.morpheme
             cmd.add_argument(
                 '-a',
                 '--attr',
                 action='append',
                 default=[],
-                help="set show mrph attributes"
+                help="set show mrph attributes (see https://pyknp.readthedocs.io/en/latest/mrph.html#module-pyknp.juman.morpheme)"
             )
+
+        typo_cmd = subparser.add_parser(
+            'typo',
+            description='check typo',
+            help='check typo. see `typo -h`')
+        typo_cmd.set_defaults(handler=self.command_typo)
 
         distance_cmds = [distance_cmd, swing_cmd]
         for cmd in distance_cmds:
@@ -243,13 +251,16 @@ class CLI:
                 help="exclude isascii string."
             )
 
-        input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
-        for cmd in input_file_cmds:
+        output_file_cmds = [count_cmd, distance_cmd, swing_cmd, typo_cmd]
+        for cmd in output_file_cmds:
             cmd.add_argument(
                 '-o',
                 '--output',
                 help="output json file path."
             )
+
+        input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd, typo_cmd]
+        for cmd in input_file_cmds:
             cmd.add_argument(
                 '-c',
                 '--column',
@@ -346,6 +357,17 @@ class CLI:
             for d in proc.get_swing(args.num, args.threshold):
                 jw.add(d)
                 print(d.format())
+            jw.dump()
+
+    def command_typo(self, args):
+        proc = self.get_process(args)
+        typo_check = TypoCheck(proc.words)
+        typos = typo_check.kanji_in_auxiliary_verb()
+        typos.extend(typo_check.ranuki())
+        with JsonWritter(args.output) as jw:
+            for typo in typos:
+                jw.add(typo)
+                print(typo.format())
             jw.dump()
 
     def command_show(self, args):
