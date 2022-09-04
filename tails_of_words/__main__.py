@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 from argparse import FileType
 
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
-USER_CHOICE = LOG_LEVEL+list(map(lambda w: w.lower(), LOG_LEVEL))
+USER_CHOICE = LOG_LEVEL + list(map(lambda w: w.lower(), LOG_LEVEL))
 TYPE_CHOICE = ['csv', 'xml', 'html', 'plain']
 
 
@@ -61,7 +61,7 @@ class Process:
         if num > 0:
             high = []
             for x in self._swing().swing(self.words, self.ids):
-                tx = list(filter(lambda x:x.score >= threshold, x))
+                tx = list(filter(lambda x: x.score >= threshold, x))
                 high.extend(tx[0:num])
                 high = sorted(high, reverse=True, key=lambda x: x.score)[0:num]
             for d in high:
@@ -403,9 +403,11 @@ class CLI:
         else:
             self.print_help()
 
+
 def main():
     cli = CLI()
     cli.execute()
+
 
 if __name__ == '__main__':
     main()
