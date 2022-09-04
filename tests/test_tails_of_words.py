@@ -34,6 +34,7 @@ class tails_of_words_test_base(unittest.TestCase):
         value = self.capture.getvalue()
         return value
 
+
 class test_cli(tails_of_words_test_base):
 
     def setUp(self):
