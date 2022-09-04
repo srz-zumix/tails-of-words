@@ -1,0 +1,10 @@
+pyknp
+python-Levenshtein
+pyxDamerauLevenshtein
+jaconv
+html2text
+pyyaml
+importlib-metadata<2,>=0.12
+tox
+tox-pyenv
+pytest
