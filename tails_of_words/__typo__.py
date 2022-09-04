@@ -1,6 +1,3 @@
-from .__words__ import Words
-
-
 class Typo:
 
     def __init__(self, prev, typo, post, line, column, message, fix=None) -> None:
@@ -28,10 +25,10 @@ class TypoCheck:
         for mrph in mrph_list:
             if index > 0:
                 if mrph.hinsi_id != pattern[index]:
-                    index=0
+                    index = 0
                     find.clear()
             if mrph.hinsi_id == pattern[index]:
-                index+=1
+                index += 1
                 find.append(mrph)
                 if index == length:
                     index = 0
@@ -41,14 +38,14 @@ class TypoCheck:
         typos = []
         for index, line in enumerate(self.words.lines):
             # 助詞、動詞、動詞（付属動詞候補）
-            for mrphs in self._find_hinsi_pattern(line.mrph_list(), [9,2,2]):
+            for mrphs in self._find_hinsi_pattern(line.mrph_list(), [9, 2, 2]):
                 if mrphs[2].midasi != mrphs[2].yomi:
                     if "付属動詞候補" in mrphs[2].imis:
-                        typos.append(Typo(mrphs[0].midasi + mrphs[1].midasi, mrphs[2].midasi, "", index+1, mrphs[0].span[0], "補助動詞の漢字"))
+                        typos.append(Typo(mrphs[0].midasi + mrphs[1].midasi, mrphs[2].midasi, "", index + 1, mrphs[0].span[0], "補助動詞の漢字"))
             # 動詞、設備辞
-            for mrphs in self._find_hinsi_pattern(line.mrph_list(), [2,14]):
+            for mrphs in self._find_hinsi_pattern(line.mrph_list(), [2, 14]):
                 if mrphs[1].midasi != mrphs[1].yomi:
-                    typos.append(Typo(mrphs[0].midasi, mrphs[1].midasi, "", index+1, mrphs[0].span[0], "補助動詞の漢字"))
+                    typos.append(Typo(mrphs[0].midasi, mrphs[1].midasi, "", index + 1, mrphs[0].span[0], "補助動詞の漢字"))
         return typos
 
     def ranuki(self):
@@ -66,7 +63,7 @@ class TypoCheck:
                 if target_prev is not None:
                     # 〜れ？、〜れ！ は除外
                     if mrph.hinsi_id != 1:
-                        typos.append(Typo(target_prev.midasi, prev.midasi, mrph.midasi, index+1, target_prev.span[0], "ら抜き言葉"))
+                        typos.append(Typo(target_prev.midasi, prev.midasi, mrph.midasi, index + 1, target_prev.span[0], "ら抜き言葉"))
                     target_prev = None
 
                 if ("れる/れる" == mrph.repname) and (prev is not None):

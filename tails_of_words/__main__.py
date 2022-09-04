@@ -7,7 +7,7 @@ from .__config__ import score_config
 from .__words__ import Words
 from .__swing__ import Swing, SwingOption
 from .__swing__ import Section
-from .__typo__ import TypoCheck, Typo
+from .__typo__ import TypoCheck
 from argparse import ArgumentParser
 from argparse import FileType
 
