@@ -18,23 +18,24 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-class test_base(unittest.TestCase):
+class tails_of_words_test_base(unittest.TestCase):
 
     def setUp(self):
         self.capture = StringIO()
         sys.stdout = self.capture
-        return super(test_base, self).setUp()
+        return super(tails_of_words_test_base, self).setUp()
 
     def tearDown(self):
         sys.stdout = sys.__stdout__
         self.capture.close()
-        return super(test_base, self).tearDown()
+        return super(tails_of_words_test_base, self).tearDown()
 
     def stdoout(self):
         value = self.capture.getvalue()
         return value
 
-class test_cli(test_base):
+
+class test_cli(tails_of_words_test_base):
 
     def setUp(self):
         return super(test_cli, self).setUp()
@@ -63,7 +64,8 @@ class test_cli(test_base):
         # eprint(output)
         self.assertNotEqual(output.find("名詞"), -1)
 
-class test_words(test_base):
+
+class test_words(tails_of_words_test_base):
 
     def setUp(self):
         return super(test_words, self).setUp()

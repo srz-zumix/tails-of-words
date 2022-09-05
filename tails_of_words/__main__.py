@@ -7,11 +7,12 @@ from .__config__ import score_config
 from .__words__ import Words
 from .__swing__ import Swing, SwingOption
 from .__swing__ import Section
+from .__typo__ import TypoCheck
 from argparse import ArgumentParser
 from argparse import FileType
 
 LOG_LEVEL = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
-USER_CHOICE = LOG_LEVEL+list(map(lambda w: w.lower(), LOG_LEVEL))
+USER_CHOICE = LOG_LEVEL + list(map(lambda w: w.lower(), LOG_LEVEL))
 TYPE_CHOICE = ['csv', 'xml', 'html', 'plain']
 
 
@@ -60,7 +61,7 @@ class Process:
         if num > 0:
             high = []
             for x in self._swing().swing(self.words, self.ids):
-                tx = list(filter(lambda x:x.score >= threshold, x))
+                tx = list(filter(lambda x: x.score >= threshold, x))
                 high.extend(tx[0:num])
                 high = sorted(high, reverse=True, key=lambda x: x.score)[0:num]
             for d in high:
@@ -204,13 +205,20 @@ class CLI:
 
         mrphs_show_cmds = [show_cmd, count_cmd]
         for cmd in mrphs_show_cmds:
+            # https://pyknp.readthedocs.io/en/latest/mrph.html#module-pyknp.juman.morpheme
             cmd.add_argument(
                 '-a',
                 '--attr',
                 action='append',
                 default=[],
-                help="set show mrph attributes"
+                help="set show mrph attributes (see https://pyknp.readthedocs.io/en/latest/mrph.html#module-pyknp.juman.morpheme)"
             )
+
+        typo_cmd = subparser.add_parser(
+            'typo',
+            description='check typo',
+            help='check typo. see `typo -h`')
+        typo_cmd.set_defaults(handler=self.command_typo)
 
         distance_cmds = [distance_cmd, swing_cmd]
         for cmd in distance_cmds:
@@ -243,13 +251,16 @@ class CLI:
                 help="exclude isascii string."
             )
 
-        input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd]
-        for cmd in input_file_cmds:
+        output_file_cmds = [count_cmd, distance_cmd, swing_cmd, typo_cmd]
+        for cmd in output_file_cmds:
             cmd.add_argument(
                 '-o',
                 '--output',
                 help="output json file path."
             )
+
+        input_file_cmds = [count_cmd, distance_cmd, show_cmd, swing_cmd, typo_cmd]
+        for cmd in input_file_cmds:
             cmd.add_argument(
                 '-c',
                 '--column',
@@ -348,6 +359,17 @@ class CLI:
                 print(d.format())
             jw.dump()
 
+    def command_typo(self, args):
+        proc = self.get_process(args)
+        typo_check = TypoCheck(proc.words)
+        typos = typo_check.kanji_in_auxiliary_verb()
+        typos.extend(typo_check.ranuki())
+        with JsonWritter(args.output) as jw:
+            for typo in typos:
+                jw.add(typo)
+                print(typo.format())
+            jw.dump()
+
     def command_show(self, args):
         proc = self.get_process(args)
         vars = args.attr
@@ -381,9 +403,11 @@ class CLI:
         else:
             self.print_help()
 
+
 def main():
     cli = CLI()
     cli.execute()
+
 
 if __name__ == '__main__':
     main()

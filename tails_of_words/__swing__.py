@@ -24,7 +24,7 @@ def calc_score(section):
     # 出現数の差が大きいほどスコア大
     la = section.a.count
     lb = section.b.count
-    ls = (1.0 - min(la,lb)/(la+lb)*2)
+    ls = (1.0 - min(la, lb) / (la + lb) * 2)
     score *= 1.0 + (ls * score_config.occurrences_sacle)
     # 読みが同じならスコアアップ
     if section.distance.normalized_distance().yomi >= 1.0:
@@ -36,6 +36,7 @@ def calc_score(section):
         if 'ー' not in section.a.get_rep_unit().yomi and ('ー' in section.a.midasi or 'ー' in section.b.midasi):
             score *= score_config.same_yomi_with_remove_long_vowel_scale
     return score
+
 
 class SectionPoint:
 
@@ -72,6 +73,7 @@ class SectionPoint:
                 "midasi": unit.midasi,
                 "yomi": unit.yomi
             }
+
 
 class Section:
 

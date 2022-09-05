@@ -18,6 +18,7 @@
   * ジャロ・ウィンクラー距離
   * それぞれ読みの距離
 * 任意品詞の表記ゆれ検出
+* 補助動詞の漢字・ら抜き言葉の検出
 
 ## Install
 
@@ -37,7 +38,7 @@ docker pull srzzumix/tails-of-words
 
 ## Usage
 
-e.g.
+### swing (表記ゆれ検出)
 
 ```sh
 $ echo コンピュータとコンピューター | tails-of-words swing -
@@ -56,6 +57,8 @@ $ docker run --rm -w /work -v $(pwd):/work srzzumix/tails-of-words swing /work/t
  1, 0.86, 0.86: コンピューター(1) vs コンピュータ(1) : 1.03
  0, 1.00, 0.67: Max(1) vs max(1) : 1.00
 ```
+
+### 形態素解析のカスタム
 
 use knp
 
@@ -86,6 +89,15 @@ $ echo 時間と歌人 | tails-of-words distance -
  2,  2, 0.00, 0.33: 時間(1) vs 歌人(1) : 0.00
 ```
 
+### typo (補助動詞の漢字・ら抜き言葉検出)
+
+```sh
+$ echo 5時に来て頂く予定です | tails-of-words typo -
+1:2: に来て頂く: 補助動詞の漢字
+$ echo あの人が来るとは考えれない | tails-of-words typo -
+1:8: 考えれない: ら抜き言葉
+```
+
 ### Help
 
 ```sh
@@ -99,6 +111,7 @@ positional arguments:
     distance            distance counted words. see `distance -h`
     show                show words. see `show -h`
     swing               show notation fluctuations. see `swing -h`
+    typo                check typo. see `typo -h`
     help                show subcommand help. see `help -h`
 
 optional arguments:
@@ -151,6 +164,8 @@ optional arguments:
 
 * [CEDEC2021: ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み](https://cedec.cesa.or.jp/2021/session/detail/s6049c15401f23)
   * [ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み - Speaker Deck](https://speakerdeck.com/cygames/kemuzhi-zuo-xiao-lu-hua-falsetamefalseainiyoruhua-xiang-ren-shi-zi-ran-yan-yu-chu-li-hefalsequ-rizu-mi) 
+  * [【CEDEC2021】ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み - YouTube](https://www.youtube.com/watch?v=uzhxh5XKyhM)
+* [CEDEC2022: AIによる自然言語処理を活用したゲームシナリオの誤字検出への取り組み](https://cedec.cesa.or.jp/2022/session/detail/32)
 * [pyknp: Python Module for JUMAN++/KNP — pyknp documentation](https://pyknp.readthedocs.io/en/latest/index.html)
 * [JUMAN品詞体系 | Yuta Hayashibe](https://hayashibe.jp/tr/juman/dictionary/pos)
 
