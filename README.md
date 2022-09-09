@@ -166,6 +166,7 @@ optional arguments:
   * [ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み - Speaker Deck](https://speakerdeck.com/cygames/kemuzhi-zuo-xiao-lu-hua-falsetamefalseainiyoruhua-xiang-ren-shi-zi-ran-yan-yu-chu-li-hefalsequ-rizu-mi) 
   * [【CEDEC2021】ゲーム制作効率化のためのAIによる画像認識・自然言語処理への取り組み - YouTube](https://www.youtube.com/watch?v=uzhxh5XKyhM)
 * [CEDEC2022: AIによる自然言語処理を活用したゲームシナリオの誤字検出への取り組み](https://cedec.cesa.or.jp/2022/session/detail/32)
+  * [CEDiL: AIによる自然言語処理を活用したゲームシナリオの誤字検出への取り組み](https://cedil.cesa.or.jp/cedil_sessions/view/2638)
 * [pyknp: Python Module for JUMAN++/KNP — pyknp documentation](https://pyknp.readthedocs.io/en/latest/index.html)
 * [JUMAN品詞体系 | Yuta Hayashibe](https://hayashibe.jp/tr/juman/dictionary/pos)
 
